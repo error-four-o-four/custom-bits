@@ -20,10 +20,9 @@ export class DateElement extends ProtoElement {
 			this.update();
 		}
 
-		if (callback !== null) {
-			this.callback = callback;
-			for (const spinner of this.spinners) spinner.setCallback(this.update.bind(this));
-		}
+
+		this.callback = callback;
+		for (const spinner of this.spinners) spinner.setCallback(this.update.bind(this));
 	}
 
 	update() {

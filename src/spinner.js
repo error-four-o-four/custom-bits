@@ -177,6 +177,10 @@ export class Spinner {
 		this.setPositionByIndex(index);
 	}
 
+	updateItemHeight() {
+		this.itemHeight = this.wrap.children[0].clientHeight;
+	}
+
 	updateTransform() {
 		// animation frame
 		// use absolute height
