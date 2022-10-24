@@ -1,13 +1,14 @@
 import './src/css/button.css';
 import './src/css/dialog.css';
-import './src/css/spinner.css';
 
-import { Spinner } from './src/spinner.js';
-import { TimeElement } from './src/element-time.js';
-import { DateElement } from './src/element-date.js';
+import { Element } from './src/element.js';
 
-const dialogElement = document.getElementById('main-dialog');
+const form = document.forms['widget'];
+const wrap = form['selector'].children[0];
+
 const dialogButton = document.getElementById('main-dialog-button');
+const dialogElement = document.getElementById('main-dialog');
+const confirmButton = dialogElement.querySelector('button[name=confirm]');
 
 if (typeof dialogElement.showModal !== 'function') {
 	dialogElement.hidden = true;
@@ -15,44 +16,47 @@ if (typeof dialogElement.showModal !== 'function') {
 	/**@todo create polyfill / fallback */
 }
 
-const form = document.querySelector('form[method=dialog]')
-const wrap = form.children[0];
+let dialogDate = new Date();
+updateDialogButton();
 
-const dateElement = new DateElement(wrap.children[0], new Date())
-const timeElement = new TimeElement(wrap.children[1], new Date(), (hh, mm) => console.log(hh, mm));
+const spinnerElement = new Element(wrap, { date: dialogDate });
 
 // listeners
-dialogButton.addEventListener('click', openDialog);
+dialogButton.addEventListener('click', openModal);
+dialogElement.addEventListener('close', closeModal);
 
-function openDialog() {
+function openModal() {
 	dialogElement.showModal();
 
-	for (const spinner of [...dateElement.spinners, ...timeElement.spinners]) {
-		spinner.updateItemHeight();
-		spinner.setPositionByIndex(spinner.i);
+	if (document.documentElement.scrollHeight >
+		document.documentElement.clientHeight
+		&& !supportsTouch()
+	) {
+		document.body.classList.add('no-scroll-bar');
 	}
+	document.body.classList.add('no-scroll');
 }
 
+function closeModal() {
+	document.body.classList.remove('no-scroll', 'no-scroll-bar');
 
-//
-let pointerIsDown = false;
+	if (dialogElement.returnValue === 'cancel') {
+		spinnerElement.date = dialogDate;
+		return;
+	};
 
-window.addEventListener('pointerdown', handlePointerPressed);
-window.addEventListener('pointermove', handlePointerMoved);
-window.addEventListener('pointerup', handlePointerRelease);
-
-function handlePointerPressed() {
-	pointerIsDown = true;
+	dialogDate = new Date(spinnerElement.date);
+	updateDialogButton();
 }
 
-function handlePointerMoved(e) {
-	if (!pointerIsDown) return;
-
-	Spinner.drag(e);
+function updateDialogButton() {
+	dialogButton.firstElementChild.textContent = toLocaleDate(dialogDate);
 }
 
-function handlePointerRelease() {
-	pointerIsDown = false;
+function toLocaleDate(d) {
+	return d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' })
+}
 
-	Spinner.release();
+function supportsTouch() {
+	return window && 'ontouchstart' in window;
 }

@@ -1,251 +1,155 @@
+import { debounce } from './utils.js';
+
 const optionsDefault = {
 	min: 1,
-	max: 12,
+	max: 10,
 	step: 1,
 	index: 0,
+	label: 'default',
+	callback: null
 };
-const animationTargets = [];
-let pointerTarget = null;
 
-let isAnimating = false;
-let pClientY = null;
-
-function add(item, arr) {
-	if (arr.indexOf(item) < 0) arr.push(item);
-}
-
-function rem(item, arr) {
-	const index = arr.indexOf(item);
-
-	if (arr.length === 1 || index === arr.length - 1) {
-		arr.pop();
-		return;
-	}
-
-	arr[index] = arr.pop();
-}
-
-function animate() {
-	if (!isAnimating) isAnimating = true;
-
-	for (const target of animationTargets) {
-		if (target === null) {
-			rem(target, animationTargets);
-			continue;
-		}
-
-		// set transform
-		target.animate();
-
-		if (target.spinning) continue;
-
-		if (target.snapping) continue;
-
-		// remove element when the animation has finished
-		rem(target, animationTargets);
-	}
-
-	if (animationTargets.length === 0) isAnimating = false;
-
-	// exit draw loop
-	if (!isAnimating) return;
-
-	// request draw
-	window.requestAnimationFrame(animate);
+export function createSpinner(parent, options = optionsDefault) {
+	return new Spinner(parent, options);
 }
 
 export class Spinner {
-	static pressed(target, e) {
-		pointerTarget = target;
-		pClientY = e.clientY;
-	}
-	static drag(e) {
-		if (pointerTarget === null) return;
+	constructor (parent, options) {
+		this.parent = parent;
 
-		pointerTarget.drag(e.clientY - pClientY);
-		pClientY = e.clientY;
-	}
-	static release() {
-		if (pointerTarget === null) return;
-
-		// avoid invoking multiple callbacks
-		add(pointerTarget, animationTargets);
-
-		pointerTarget.spinning = true;
-		pointerTarget = null;
-		pClientY = null;
-
-		if (isAnimating) return;
-
-		animate();
-	}
-	static animate(target, index) {
-		add(target, animationTargets);
-
-		// set state
-		target.setIndex(index);
-		target.snapping = true;
-
-		if (isAnimating) return;
-
-		animate();
-	}
-
-	// ///////////////////////////////////////////// //
-
-	constructor (element, options = {}) {
 		options = {
 			...optionsDefault,
 			...options
 		};
 
-		this.callback = null;
+		this.itemCount = options.max - options.min + 1;
+		this.itemHeight = null;
 
-		// properties
-		this.i = 0;
-		this.y = 0;		// position [0, -maxHeight]
-		this.vy = 0;	// velocity
-		this.spinning = false;
-		this.snapping = false;
+		this.label = options.label;
+		this.callback = options.callback;
 
-		// create elements
-		this.wrap = document.createElement('ul');
-		this.wrap.classList.add('no-select', 'spinner');
+		this.element = document.createElement('div');
+		this.parent.appendChild(this.element);
 
-		this.values = [];
-		for (let i = options.min; i <= options.max; i += options.step) {
-			const item = document.createElement('li');
-			item.textContent = i;
-			this.wrap.appendChild(item);
-			this.values.push(i);
+		const wrap = document.createElement('div');
+		for (let i = 0; i < this.itemCount; i += options.step) {
+			const item = document.createElement('p');
+			item.innerText = options.min + i % this.itemCount;
+			wrap.appendChild(item);
+		}
+		this.element.appendChild(wrap);
+		this.element.appendChild(wrap.cloneNode(true));
+		this.element.appendChild(wrap.cloneNode(true));
+		this.element.classList.add('spinner', options.label);
+
+		this.itemHeight = this.element.children[0].children[0].scrollHeight;
+
+		this.wrapIndex = 0;
+		this.itemIndex = 0;
+		this.index = options.index;
+
+		const margin = 0.5 * (this.element.children[0].scrollHeight - this.element.offsetHeight);
+		const optionsIO = {
+			root: this.element,
+			rootMargin: `${margin}px 0px`,
+			threshold: 0.5
+		};
+
+		this.io = new IntersectionObserver(this.observe.bind(this), optionsIO);
+		for (const child of this.element.children) this.io.observe(child);
+
+		this.element.addEventListener('scroll', debounce(this.snap.bind(this), 150));
+	}
+	set index(relItemIndex) {
+		const newScrollTop = (relItemIndex + this.itemCount - 1) * this.itemHeight;
+
+		this.element.children[this.wrapIndex].children[this.itemIndex].classList.remove('current');
+		this.element.children[1].children[relItemIndex].classList.add('current');
+
+		this.wrapIndex = 1;
+		this.itemIndex = relItemIndex;
+		this.element.scrollTop = newScrollTop;
+	}
+	get index() {
+		return this.relItemIndex;
+	}
+
+	set value(content) {
+		let relItemIndex = -1;
+
+		if (typeof content !== 'string') content = `${content}`;
+
+		for (const [index, child] of [...this.element.children[1].children].entries()) {
+			if (content !== child.textContent) continue;
+			relItemIndex = index;
 		}
 
-		// append created element
-		element.appendChild(this.wrap);
+		if (relItemIndex < 0) return;
 
-		// add listener
-		element.onpointerdown = this.constructor.pressed.bind(null, this);
-
-		this.itemHeight = this.wrap.children[0].clientHeight;
-		this.setPositionByIndex(options.index);
+		this.index = relItemIndex;
 	}
-
-	get numChildren() {
-		const activeChildren = (child) => !child.classList.contains('deactivated');
-		return [...this.wrap.children].filter(activeChildren).length - 1;
-	}
-	get maxHeight() {
-		return this.numChildren * this.itemHeight;
-		// return this.wrap.scrollHeight - this.itemHeight;
-	}
-
 	get value() {
-		return this.values[this.i];
+		// const current = this.element.getElementsByClassName('current')[0];
+		const current = this.element.children[this.wrapIndex].children[this.itemIndex];
+		return (current) ? parseFloat(current.textContent) : null;
 	}
 
-	// ///////////////////////////////////////////// //
-
-	// setCustomEvent(listener, event) {
-	// 	this.listener = listener;
-	// 	this.event = event;
-	// }
-
-	setCallback(callback) {
-		this.callback = callback;
-	}
-
-	activateItem(index) {
-		this.wrap.children[index].classList.remove('deactivated');
-	}
 	deactivateItem(index) {
-		this.wrap.children[index].classList.remove('current');
-		this.wrap.children[index].classList.add('deactivated');
-	}
-
-	setIndex(index) {
-		this.wrap.children[this.i].classList.remove('current');
-		this.i = Math.max(0, Math.min(this.numChildren, index));
-		this.wrap.children[this.i].classList.add('current');
-	}
-	setPositionByIndex(index) {
-		this.setIndex(index);
-		this.y = (this.i / this.numChildren) * -this.maxHeight;
-		this.updateTransform();
-	}
-	setPositionByValue(value) {
-		const index = this.values.indexOf(value);
-		this.setPositionByIndex(index);
-	}
-
-	updateItemHeight() {
-		this.itemHeight = this.wrap.children[0].clientHeight;
-	}
-
-	updateTransform() {
-		// animation frame
-		// use absolute height
-		const h = -(this.wrap.scrollHeight - this.itemHeight);
-		this.y = Math.min(0, Math.max(h, this.y + this.vy));
-		this.wrap.style.transform = `translateY(${this.itemHeight + this.y}px)`;
-	};
-	updateIndex() {
-		// update index to highlight current value
-		let i = Math.max(0, Math.round(-this.y / this.itemHeight));
-		if (i !== this.i) {
-			this.wrap.children[this.i].classList.remove('current');
-			this.wrap.children[i].classList.add('current');
+		for (const child of this.element.children) {
+			child.children[index].classList.add('deactivated')
 		}
-		this.i = i;
-	};
-
-	// ///////////////////////////////////////////// //
-
-	drag(vy) {
-		this.vy = vy;
-		this.updateTransform();
-		this.updateIndex();
 	}
-
-	animate() {
-		if (this.spinning) {
-			this.spin();
+	activateItem(index) {
+		for (const child of this.element.children) {
+			child.children[index].classList.remove('deactivated')
+		}
+	}
+	observe(entries) {
+		if (this.element.scrollTop === 0) {
+			this.element.scrollTop = this.element.children[0].scrollHeight - this.itemHeight;
 			return;
 		}
 
-		this.snap();
-	}
-	spin() {
-		this.vy *= 0.9;
-		this.updateTransform();
-		this.updateIndex();
+		for (const entry of entries) {
+			if (entry.target === this.element.firstElementChild
+				|| entry.target === this.element.lastElementChild) continue;
 
-		if (-0.1 < this.vy && this.vy < 0.1) this.vy = 0;
+			if (entry.intersectionRatio > 0.5) continue;
 
-		if (this.y === 0 || this.y === -this.maxHeight) this.vy = 0;
-
-		if (this.vy !== 0) return;
-
-		this.spinning = false;
-		this.snapping = true;
+			if (entry.boundingClientRect.y < 0) {
+				this.element.appendChild(this.element.removeChild(this.element.firstElementChild));
+				continue;
+			}
+			else {
+				this.element.insertBefore(this.element.removeChild(this.element.lastElementChild), this.element.firstElementChild);
+				continue;
+			}
+		}
 	}
 	snap() {
-		let ty = -(this.i * this.itemHeight);
-		let dy = ty - this.y;
+		const eltScrollTop = this.element.scrollTop + 1.5 * this.itemHeight;
+		const absItemIndex = Math.floor(eltScrollTop / this.itemHeight);
+		const newScrollTop = absItemIndex * this.itemHeight - this.itemHeight;
 
-		if (Math.abs(dy) < 0.5) {
-			this.vy = 0;
-			this.y = ty;
-			this.snapping = false;
+		if (this.element.scrollTop === newScrollTop) return;
 
-			this.callback && this.callback();
-			// if (this.listener && this.event) {
-			// 	this.listener.dispatchEvent(this.event);
-			// }
-		}
-		else {
-			this.vy = 0.1 * dy;
-		}
+		this.element.scrollTo({
+			top: newScrollTop,
+			behavior: 'smooth'
+		})
 
-		this.updateTransform();
+		this.wrapIndex = Math.floor(absItemIndex / this.itemCount);
+		this.itemIndex = absItemIndex % this.itemCount;
+
+		const previous = this.element.getElementsByClassName('current')[0];
+		previous && previous.classList.remove('current');
+
+		const current = this.element.children[this.wrapIndex].children[this.itemIndex];
+		current && current.classList.add('current');
+
+		this.callback && this.callback(this.label, this.value);
+	}
+	snapToIndex() {
+
 	}
 }
