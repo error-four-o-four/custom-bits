@@ -22,14 +22,12 @@ dialog {
 	visibility: hidden;
 
 	width: 100%;
-	height: 100%;
-	max-width: 320px;
+	min-width: 320px;
+	max-width: 540px;
 	margin: auto;
-	padding: 0;
+	padding: 0 2rem;
 	top: 0;
 	left: 0;
-
-	font-size: 1rem;
 
 	border: none;
 	background-color: transparent;
@@ -57,19 +55,27 @@ dialog:not([open])::backdrop {
 
 dialog form {
 	display: flex;
-	flex-direction: column;
-	justify-content: space-evenly;
-	height: 100%;
-	padding: 0 1em;
+	flex-wrap: wrap;
+	justify-content: center;
+
+	width: 100%;
 }
 
 dialog form fieldset {
-	background: #242424;
-	border-radius: 0.5em;
+	position: relative;
+	margin: 1em 0;
+
+	font-size: 1rem;
+
 	border: 1px solid #666;
+	border-radius: 0.5em;
+	background: #242424;
 	/* box-shadow: 0 0em 0.5em 0.25em #0003; */
 
 	overflow: hidden;
+}
+fieldset[name=calendar] {
+	width: 100%;
 }
 
 .spinners-wrap {
@@ -79,7 +85,6 @@ dialog form fieldset {
 	display: flex;
 	width: 100%;
 	height: 6em;
-	/* padding: 0 0.5rem; */
 
 	font-size: 1.5em;
 	line-height: 2em;
@@ -103,16 +108,18 @@ dialog form fieldset {
 	);
 }
 
-
 .spinner {
 	flex: 1;
 	height: 100%;
+	min-width: 2.5em;
 	overflow: hidden scroll;
 
 	color: #b4b4b4;
 	font-weight: 400;
 
 	border-right: 1px solid #666;
+
+	cursor: grab;
 }
 .spinner:last-of-type {
 	border-right: none;
@@ -135,6 +142,7 @@ dialog form fieldset {
 }
 
 .spinner p {
+	user-select: none;
 	text-align: center;
 }
 .spinner p.current {
@@ -151,6 +159,7 @@ dialog form fieldset {
 }
 .buttons-wrap button {
 	flex: 1;
+	letter-spacing: 1px;
 	border-radius: 0;
 	background-color: #333;
 
@@ -159,3 +168,98 @@ dialog form fieldset {
 .buttons-wrap button:hover {
 	background-color: var(--clr-highlight);
 }
+
+.calendar-wrap {
+	/*
+	--cell-min-wdt: 2.5em;
+	--cell-line-hgt: 2rem;
+	min-width: calc(7 * var(--cell-min-wdt));
+	min-height: calc(8 * var(--cell-line-hgt));
+	*/
+
+	width: 100%;
+
+	font-size: 1em;
+
+	position: relative;
+
+	background-color: #333;
+}
+
+.calendar-wrap table {
+	position: absolute;
+	width: 100%;
+
+	top: 0;
+	left: 0;
+
+	user-select: none;
+
+	border: 1px solid #666;
+	border-radius: 0.5em;
+	border-spacing: 0.375em;
+
+	background-color: #333;
+	background: #333 linear-gradient(
+		#0000 35%,
+		#0004 100%
+	);
+	opacity: 1;
+	transition: transform 0.3s;
+}
+.calendar-wrap table.deactivated {
+	transform: translateX(100%);
+}
+.calendar-wrap table.hidden {
+	display: none;
+}
+
+.calendar-wrap table.placeholder {
+	position: relative;
+	display: block;
+	visibility: hidden;
+}
+
+.calendar-wrap thead {
+	font-size: 0.875em;
+	line-height: 2em;
+	font-weight: 500;
+	letter-spacing: 1px;
+
+	color: #e9e9e9;
+	text-align: center;
+}
+
+.calendar-wrap tbody {
+	color: #ccc;
+	text-align: center;
+
+	font-size: 1.25em;
+	line-height: 1.25em;
+}
+.calendar-wrap tbody td {
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+.calendar-wrap tbody td:hover {
+	background-color: var(--clr-highlight);
+}
+.calendar-wrap tbody td {
+	border: 0.125em solid transparent;
+	border-radius: 0.25em;
+}
+
+.calendar-wrap tbody td.current {
+	color: #ddd;
+	font-weight: bold;
+	background-color: #666;
+}
+.calendar-wrap tbody td.sunday {
+	color: #a44;
+}
+.calendar-wrap tbody td.deactivated {
+	opacity: 0.4;
+}
+
+
+

@@ -1,14 +1,11 @@
 import './src/css/button.css';
 import './src/css/dialog.css';
 
-import { Element } from './src/element.js';
-
-const form = document.forms['widget'];
-const wrap = form['selector'].children[0];
+import { Selector } from './src/selector.js';
+import { Calendar } from './src/calendar.js';
 
 const dialogButton = document.getElementById('main-dialog-button');
 const dialogElement = document.getElementById('main-dialog');
-const confirmButton = dialogElement.querySelector('button[name=confirm]');
 
 if (typeof dialogElement.showModal !== 'function') {
 	dialogElement.hidden = true;
@@ -19,7 +16,20 @@ if (typeof dialogElement.showModal !== 'function') {
 let dialogDate = new Date();
 updateDialogButton();
 
-const spinnerElement = new Element(wrap, { date: dialogDate });
+const form = document.forms['widget'];
+const selectorWrap = form['selector'].children[0];
+const calendarWrap = form['calendar'].children[0];
+
+const selectorElement = new Selector(selectorWrap, { date: dialogDate });
+const calendarElement = new Calendar(calendarWrap, { date: dialogDate });
+
+selectorElement.callback = () => {
+	calendarElement.date = selectorElement.date;
+};
+calendarElement.callback = () => {
+	selectorElement.setDate(calendarElement.date);
+};
+
 
 // listeners
 dialogButton.addEventListener('click', openModal);
@@ -41,11 +51,11 @@ function closeModal() {
 	document.body.classList.remove('no-scroll', 'no-scroll-bar');
 
 	if (dialogElement.returnValue === 'cancel') {
-		spinnerElement.date = dialogDate;
+		selectorElement.date = dialogDate;
 		return;
 	};
 
-	dialogDate = new Date(spinnerElement.date);
+	dialogDate = new Date(selectorElement.date);
 	updateDialogButton();
 }
 
@@ -54,7 +64,7 @@ function updateDialogButton() {
 }
 
 function toLocaleDate(d) {
-	return d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' })
+	return d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' });
 }
 
 function supportsTouch() {
