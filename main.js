@@ -13,7 +13,7 @@ if (typeof dialogElement.showModal !== 'function') {
 	/**@todo create polyfill / fallback */
 }
 
-let dialogDate = new Date();
+let dialogDate = new Date(2010, 0, 2);
 updateDialogButton();
 
 const form = document.forms['widget'];
@@ -24,12 +24,12 @@ const selectorElement = new Selector(selectorWrap, { date: dialogDate });
 const calendarElement = new Calendar(calendarWrap, { date: dialogDate });
 
 selectorElement.callback = () => {
-	calendarElement.date = selectorElement.date;
+	calendarElement.setDate(selectorElement.date);
 };
 calendarElement.callback = () => {
-	selectorElement.setDate(calendarElement.date);
+	console.log(toLocaleDate(calendarElement.date))
+	selectorElement.setDate(calendarElement.date, true);
 };
-
 
 // listeners
 dialogButton.addEventListener('click', openModal);

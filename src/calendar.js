@@ -1,21 +1,20 @@
+import { isLeap, getDay } from './utils.js';
+
 const optionsDefault = {
 	date: new Date(),
 	callback: null,
 };
 
-const labels = {
-	en: 'Mo Tu We Th Fr Sa Su'.split(' '),
-	de: 'Mo Di Mi Do Fr Sa So'.split(' '),
-};
+const labels = 'Mo Tu We Th Fr Sa Su'.split(' ');
 
 const slideInFrames = [
 	{ transform: 'translateX(100%)' },
 	{ transform: 'translateX(0%)' },
-]
+];
 const slideOutFrames = [
 	{ transform: 'translateX(-100%)' },
 	{ transform: 'translateX(0%)' },
-]
+];
 
 const slideOptions = {
 	duration: 250,
@@ -34,81 +33,85 @@ export class Calendar {
 		this.parent = parent;
 		this.table = this.parent.appendChild(createTable());
 		this.cells = getCells(this.table);
+		this.currentCell = null;
 
 		this.animating = false;
 		this.animTarget = this.parent.appendChild(createTable());
 		this.animTarget.classList.add('hidden');
 		this.animTargetCells = getCells(this.animTarget);
 
-		// store reference
-		this.value = options.date;
 		// set initial values
-		setCells(this.cells, this.value);
-		setCurrentCell(this.cells, this.value);
+		updateCells(this.cells, options.date);
+		// store reference
+		this.date = options.date;
+		this.setCurrentCell();
 
 		this.table.addEventListener('click', this.update.bind(this));
 	}
 
-	set date(value) {
-		const prev = this.cells.find((cell) => cell.classList.contains('current'));
-		prev?.classList.remove('current');
-
-		if (equalMonth(value, this.value) && equalYear(value, this.value)) {
+	setDate(date) {
+		if (equalMonth(date, this.date) && equalYear(date, this.date)) {
 			// set new date value
-			setCurrentCell(this.cells, value);
-			this.value = value;
+			this.date = date;
+			this.setCurrentCell();
 			return;
 		}
 
-		setCells(this.animTargetCells, value);
+		updateCells(this.animTargetCells, date);
 
 		// if (this.animating) return;
 
 		if (!this.animating) this.animating = true;
 
-		const earlierMonth = value.getTime() < this.value.getTime();
+		const earlierMonth = date.getTime() < this.date.getTime();
 		const slideFrames = (earlierMonth) ? slideOutFrames : slideInFrames;
-		// if (earlierMonth) this.animTarget.style.transform = 'translateY(0%)';
+
+		// set new date value
+		this.date = date;
 
 		this.animTarget.classList.remove('hidden');
-
 		const slideAnim = this.animTarget.animate(slideFrames, slideOptions);
 
 		slideAnim.onfinish = () => {
-			setCells(this.cells, value);
-			setCurrentCell(this.cells, value);
+			updateCells(this.cells, this.date);
+			this.setCurrentCell();
 			this.animTarget.classList.add('hidden');
 			this.animating = false;
 		};
-
-		// set new date value
-		this.value = value;
 	}
-	get date() {
-		return this.value;
+
+	setCurrentCell() {
+		const dateString = `${this.date.getDate()}`;
+		const cell = this.cells.find((cell) => (
+			cell.nodeName === 'TD'
+			&& !cell.classList.contains('deactivated')
+			&& cell.textContent === dateString));
+
+		this.currentCell?.classList.remove('current');
+		this.currentCell = (cell) ? cell : null;
+		this.currentCell?.classList.add('current');
 	}
 
 	update(e) {
+		if (e.target.nodeName !== 'TD') return;
+
 		const cell = e.target;
 		const day = parseInt(cell.textContent);
 
-		const next = new Date(this.value);
-		next.setDate(day);
-
+		const next = new Date(this.date);
 		if (cell.classList.contains('deactivated')) {
 			const isInFirstRow = cell.parentElement === this.table.tBodies[0].children[0];
-			const month = this.value.getMonth() + ((isInFirstRow) ? -1 : 1);
-			next.setMonth(month);
+			// const month = this.date.getMonth() + ((isInFirstRow) ? -1 : 1);
+			next.setMonth(next.getMonth() + ((isInFirstRow) ? -1 : 1));
 		}
+		next.setDate(day);
 
-		this.date = next;
+		this.setDate(next);
 		this.callback && this.callback();
 	}
 }
 
 function createTable() {
-	const lang = (navigator.language in labels) ? navigator.language : 'en';
-
 	const table = document.createElement('table');
 	const thead = table.appendChild(document.createElement('thead'));
 	const tbody = table.appendChild(document.createElement('tbody'));
@@ -118,10 +121,17 @@ function createTable() {
 		const el = (i === 0) ? thead : tbody;
 		el.appendChild(row);
 
-		for (let j = 0; j < 7; j += 1) {
-			const cell = document.createElement('td');
-			cell.innerHTML = (i === 0) ? labels[lang][j] : '&nbsp;';
+		for (let j = 0; j < 8; j += 1) {
+			const type = (j === 0) ? 'th' : 'td';
+			const cell = document.createElement(type);
 			row.appendChild(cell);
+
+			if (j === 0) {
+				cell.innerHTML = '&nbsp;';
+				continue;
+			}
+
+			cell.innerHTML = (i === 0) ? labels[j - 1] : '&nbsp;';
 		}
 	}
 	return table;
@@ -131,16 +141,39 @@ function getCells(table) {
 	return [...table.tBodies[0].children].reduce((cells, row) => [...cells, ...row.children], []);
 }
 
-function setCells(cells, date) {
+function updateCells(cells, date) {
+	const startDate = new Date(date.getFullYear(), 0, 1);
 	let offsetDate = getFirstDate(date);
+	const weeks = getWeeksAmount(date);
 
 	for (let i = 0; i < cells.length; i += 1) {
 		const cell = cells[i];
+		if (i % 8 === 0) {
+			const month = date.getMonth();
+
+			if (month === 0 && i === 0) {
+				const year = date.getFullYear() - 1;
+				const d = new Date(year, 0, 1);
+				cell.textContent = getWeeksAmount(d);
+				continue;
+			}
+
+			if (month === 11 && i === 40 && weeks === 53) {
+				cell.textContent = 1;
+				continue;
+			}
+
+			const days = Math.floor((offsetDate - startDate) / (24 * 60 * 60 * 1000));
+			const week = Math.ceil(days / 7) + ((weeks === 53) ? 1 : 0);
+
+			cell.textContent = `${week}`;
+			continue;
+		}
 		// reset
 		cell.classList.remove('deactivated');
 		cell.textContent = offsetDate.getDate();
 
-		if ((i + 1) % 7 === 0) cell.classList.add('sunday');
+		if ((i + 1) % 8 === 0) cell.classList.add('sunday');
 
 		if (!equalMonth(date, offsetDate)) cell.classList.add('deactivated');
 
@@ -150,16 +183,11 @@ function setCells(cells, date) {
 	}
 }
 
-function setCurrentCell(cells, value) {
-	const next = cells.find((cell) => !cell.classList.contains('deactivated') && cell.textContent === `${value.getDate()}`);
-	next.classList.add('current');
-}
-
 function getFirstDate(d) {
 	const first = new Date(d.getFullYear(), d.getMonth(), 1);
-	const offset = (first.getDay() + 6) % 7;
+	const offset = 1 - getDay(d);
 
-	first.setDate(1 - offset);
+	first.setDate(offset);
 	return first;
 }
 
@@ -177,4 +205,12 @@ function equalMonth(a, b) {
 
 function equalYear(a, b) {
 	return a.getFullYear() === b.getFullYear();
+}
+
+function getWeeksAmount(d) {
+	const year = d.getFullYear();
+	const leap = isLeap(year);
+	let firstDay = getDay(new Date(year, 0, 1));
+
+	return (leap && firstDay === 2) ? 53 : (firstDay === 3) ? 53 : 52;
 }

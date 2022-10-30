@@ -43,16 +43,6 @@ dialog::backdrop {
 	backdrop-filter: blur(0.1rem);
 }
 
-/*
-dialog::backdrop {
-	transition: background-color 1s;
-}
-dialog:not([open])::backdrop {
-	background-color: transparent;
-	backdrop-filter: blur(0px);
-}
-*/
-
 dialog form {
 	display: flex;
 	flex-wrap: wrap;
@@ -78,19 +68,6 @@ fieldset[name=calendar] {
 	width: 100%;
 }
 
-.spinners-wrap {
-	position: relative;
-	z-index: 1;
-
-	display: flex;
-	width: 100%;
-	height: 6em;
-
-	font-size: 1.5em;
-	line-height: 2em;
-	border-bottom: 1px solid #666;
-}
-
 .spinners-wrap::before {
 	content: "";
 	position: absolute;
@@ -108,30 +85,54 @@ fieldset[name=calendar] {
 	);
 }
 
-.spinner {
-	flex: 1;
+.spinners-wrap {
+	position: relative;
+	z-index: 1;
+
+	display: flex;
+	width: 100%;
+	height: 6em;
+
+	padding: 0 0.75rem;
+
+	font-size: 1.5em;
+	line-height: 2em;
+	border-bottom: 1px solid #666;
+}
+
+.spinners-wrap > div {
+	flex: 1 1 min-content;
 	height: 100%;
-	min-width: 2.5em;
+	padding: 0 0.25em;
 	overflow: hidden scroll;
 
-	color: #b4b4b4;
+	color: #a0a0a0;
 	font-weight: 400;
-
-	border-right: 1px solid #666;
+	text-align: center;
 
 	cursor: grab;
 }
-.spinner:last-of-type {
-	border-right: none;
+
+.spinners-wrap > div.divider {
+	flex: 1 1 min-content;
+	max-width: 0.25em;
+	padding: 2em 0;
+	overflow: hidden;
+
+	color: #b4b4b4;
+	font-weight: bold;
+	text-align: center;
 }
 
-.spinners-wrap.spinner-date-time .year {
-	padding: 0 1rem;
+/* spinner and divider */
+.spinner.year {
+	/* border-right: 1px solid #666; */
+	padding-right: 0.5em;
 }
 
-/* .spinners-wrap.spinner-date-time .spinner:not(.year) {
-	flex: 1 1 10%;
-} */
+.spinner.hour {
+	padding-left: 0.5em;
+}
 
 /* hide scrollbar */
 .spinner {
@@ -220,14 +221,30 @@ fieldset[name=calendar] {
 	visibility: hidden;
 }
 
-.calendar-wrap thead {
-	font-size: 0.875em;
+.calendar-wrap thead,
+.calendar-wrap th {
 	line-height: 2em;
 	font-weight: 500;
 	letter-spacing: 1px;
-
+}
+.calendar-wrap thead {
+	font-size: 0.875em;
 	color: #e9e9e9;
 	text-align: center;
+	opacity: 0.75;
+}
+.calendar-wrap th {
+	font-size: 0.625em;
+	color: #ccc;
+	text-align: left;
+	opacity: 0.75;
+}
+.calendar-wrap tbody th {
+	width: auto;
+	padding-left: 0.625em;
+}
+.calendar-wrap tbody td {
+	width: 13.25%;
 }
 
 .calendar-wrap tbody {

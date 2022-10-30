@@ -22,16 +22,19 @@ export const debounce = (func, wait) => {
   };
 };
 
+export const isLeap = (year) => new Date(year, 1, 29).getMonth() === 1
 
 export const getNumDays = (month, year) => ([1, 3, 5, 7, 8, 10, 12].includes(month))
   ? 31
   : (month !== 2)
     ? 30
-    : (new Date(year, 1, 29).getMonth() === 1)
+    : (isLeap(year))
       ? 29 : 28;
 
+export const getDay = (d) => (d.getDay() + 6) % 7;
 
-export const date2entries = (d) => ({
+
+export const date2values = (d) => ({
   day: d.getDate(),
   month: d.getMonth() + 1,
   year: d.getFullYear(),

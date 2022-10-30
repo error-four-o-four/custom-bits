@@ -31,7 +31,7 @@ export class Spinner {
 		this.itemWraps[0] = document.createElement('div');
 		for (let i = 0; i < this.itemCount; i += options.step) {
 			const item = document.createElement('p');
-			item.innerText = options.min + i % this.itemCount;
+			item.innerText = `${options.min + i % this.itemCount}`.padStart(2, '0');
 			this.itemWraps[0].appendChild(item);
 		}
 		this.itemWraps.push(this.itemWraps[0].cloneNode(true));
@@ -82,7 +82,9 @@ export class Spinner {
 		this.element.scrollTop = newScrollTop;
 	}
 	setByValue(value, smooth = false) {
-		if (typeof value !== 'string') value = `${value}`;
+		if (typeof value !== 'string') value = `${value}`.padStart(2, '0');
+
+		// console.log(value)
 
 		const relItemIndex = [...this.itemWraps[1].children] .reduce((result, item, index) => (result > -1 || value !== item.textContent) ? result : index, -1);
 
@@ -147,17 +149,7 @@ export class Spinner {
 		this.wrapIndex = Math.floor(absItemIndex / this.itemCount);
 		this.itemIndex = absItemIndex % this.itemCount;
 		this.setCurrentItem();
-		// console.log(this.currentItem)
 
 		this.callback && this.callback(this.name, this.value);
 	}
-	snapToIndex() {
-
-	}
-}
-
-function debug(children) {
-	children[0].style.backgroundColor = '#ff000033';
-	children[1].style.backgroundColor = 'transparent';
-	children[2].style.backgroundColor = '#ff00ff33';
 }
