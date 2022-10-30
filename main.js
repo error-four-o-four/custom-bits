@@ -1,5 +1,8 @@
 import './src/css/button.css';
 import './src/css/dialog.css';
+import './src/css/calendar.css';
+
+import { toLocaleDate } from './src/utils.js';
 
 import { Selector } from './src/selector.js';
 import { Calendar } from './src/calendar.js';
@@ -13,22 +16,21 @@ if (typeof dialogElement.showModal !== 'function') {
 	/**@todo create polyfill / fallback */
 }
 
-let dialogDate = new Date(2010, 0, 2);
+let dialogDate = new Date(2013, 0, 1);
 updateDialogButton();
 
-const form = document.forms['widget'];
-const selectorWrap = form['selector'].children[0];
-const calendarWrap = form['calendar'].children[0];
+const form = document.forms['date-picker'];
+const selectorField = form['selector'];
+const calendarField = form['calendar'];
 
-const selectorElement = new Selector(selectorWrap, { date: dialogDate });
-const calendarElement = new Calendar(calendarWrap, { date: dialogDate });
+const selector = new Selector(selectorField, { date: dialogDate });
+const calendar = new Calendar(calendarField, { date: dialogDate });
 
-selectorElement.callback = () => {
-	calendarElement.setDate(selectorElement.date);
+selector.callback = () => {
+	calendar.setDate(selector.date);
 };
-calendarElement.callback = () => {
-	console.log(toLocaleDate(calendarElement.date))
-	selectorElement.setDate(calendarElement.date, true);
+calendar.callback = () => {
+	selector.setDate(calendar.date, true);
 };
 
 // listeners
@@ -51,20 +53,16 @@ function closeModal() {
 	document.body.classList.remove('no-scroll', 'no-scroll-bar');
 
 	if (dialogElement.returnValue === 'cancel') {
-		selectorElement.date = dialogDate;
+		selector.date = dialogDate;
 		return;
 	};
 
-	dialogDate = new Date(selectorElement.date);
+	dialogDate = new Date(selector.date);
 	updateDialogButton();
 }
 
 function updateDialogButton() {
 	dialogButton.firstElementChild.textContent = toLocaleDate(dialogDate);
-}
-
-function toLocaleDate(d) {
-	return d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' });
 }
 
 function supportsTouch() {
