@@ -1,11 +1,19 @@
-import { isLeap, getDay } from './utils.js';
+import {
+	getNumWeeksOfYear,
+	getFirstDateOfYear,
+	getWeek,
+	getFirstMonday,
+	getNextDate,
+	equalMonth,
+	equalYear,
+} from './utils.js';
 
 const optionsDefault = {
 	date: new Date(),
 	callback: null,
 };
 
-const labels = 'Mo Tu We Th Fr Sa Su'.split(' ');
+const labels = 'Mon Tue Wed Thu Fri Sat Sun'.split(' ');
 
 const slideInFrames = [
 	{ transform: 'translateX(100%)' },
@@ -35,9 +43,8 @@ export class Calendar {
 		this.cells = getCells(this.table);
 		this.currentCell = null;
 
-		this.animating = false;
 		this.animTarget = this.parent.appendChild(createTable());
-		this.animTarget.classList.add('hidden');
+		this.animTarget.classList.add('pseudo-table', 'hidden');
 		this.animTargetCells = getCells(this.animTarget);
 
 		// set initial values
@@ -46,65 +53,54 @@ export class Calendar {
 		this.date = options.date;
 		this.setCurrentCell();
 
-		this.table.addEventListener('click', this.update.bind(this));
+		this.table.addEventListener('click', this.handleClick.bind(this));
 	}
 
 	setDate(date) {
 		if (equalMonth(date, this.date) && equalYear(date, this.date)) {
+			// clicked on a day of the month
 			// set new date value
 			this.date = date;
 			this.setCurrentCell();
 			return;
 		}
 
+		// clicked on a day of another month
+		const isLastMonth = date.getTime() < this.date.getTime();
+		const slideFrames = (isLastMonth) ? slideOutFrames : slideInFrames;
+
+		// split update current before and after animation
+		this.currentCell?.classList.remove('current');
+
+		// set the date of the animated table
 		updateCells(this.animTargetCells, date);
-
-		// if (this.animating) return;
-
-		if (!this.animating) this.animating = true;
-
-		const earlierMonth = date.getTime() < this.date.getTime();
-		const slideFrames = (earlierMonth) ? slideOutFrames : slideInFrames;
-
-		// set new date value
-		this.date = date;
-
 		this.animTarget.classList.remove('hidden');
-		const slideAnim = this.animTarget.animate(slideFrames, slideOptions);
 
+		// create custom animation (prev: left, next: right)
+		const slideAnim = this.animTarget.animate(slideFrames, slideOptions);
 		slideAnim.onfinish = () => {
-			updateCells(this.cells, this.date);
-			this.setCurrentCell();
+			// set new date value and update table
+			updateCells(this.cells, date);
+			this.currentCell = getCell(this.cells, this.date);
+			this.currentCell?.classList.add('current');
+			// hide animated table
 			this.animTarget.classList.add('hidden');
-			this.animating = false;
 		};
+
+		this.date = date;
 	}
 
 	setCurrentCell() {
-		const dateString = `${this.date.getDate()}`;
-		const cell = this.cells.find((cell) => (
-			cell.nodeName === 'TD'
-			&& !cell.classList.contains('deactivated')
-			&& cell.textContent === dateString));
-
 		this.currentCell?.classList.remove('current');
-		this.currentCell = (cell) ? cell : null;
+		this.currentCell = getCell(this.cells, this.date);
 		this.currentCell?.classList.add('current');
 	}
 
-	update(e) {
+	handleClick(e) {
 		if (e.target.nodeName !== 'TD') return;
 
 		const cell = e.target;
-		const day = parseInt(cell.textContent);
-
-		const next = new Date(this.date);
-		if (cell.classList.contains('deactivated')) {
-			const isInFirstRow = cell.parentElement === this.table.tBodies[0].children[0];
-			// const month = this.date.getMonth() + ((isInFirstRow) ? -1 : 1);
-			next.setMonth(next.getMonth() + ((isInFirstRow) ? -1 : 1));
-		}
-		next.setDate(day);
+		const next = new Date(cell.getAttribute('date'));
 
 		this.setDate(next);
 		this.callback && this.callback();
@@ -141,76 +137,44 @@ function getCells(table) {
 	return [...table.tBodies[0].children].reduce((cells, row) => [...cells, ...row.children], []);
 }
 
-function updateCells(cells, date) {
-	const startDate = new Date(date.getFullYear(), 0, 1);
-	let offsetDate = getFirstDate(date);
-	const weeks = getWeeksAmount(date);
+function getCell(cells, date) {
+	/**@todo use toDateString attribute */
+	const dateString = `${date.getDate()}`;
+	const cell = cells.find((cell) => (
+		cell.nodeName === 'TD'
+		&& !cell.classList.contains('deactivated')
+		&& cell.textContent === dateString));
 
+	return (cell) ? cell : null;
+}
+
+function updateCells(cells, date) {
+	let cellDate = getFirstMonday(date);
+
+	// debugger
 	for (let i = 0; i < cells.length; i += 1) {
 		const cell = cells[i];
+
+		// set week of row
 		if (i % 8 === 0) {
-			const month = date.getMonth();
-
-			if (month === 0 && i === 0) {
-				const year = date.getFullYear() - 1;
-				const d = new Date(year, 0, 1);
-				cell.textContent = getWeeksAmount(d);
-				continue;
-			}
-
-			if (month === 11 && i === 40 && weeks === 53) {
-				cell.textContent = 1;
-				continue;
-			}
-
-			const days = Math.floor((offsetDate - startDate) / (24 * 60 * 60 * 1000));
-			const week = Math.ceil(days / 7) + ((weeks === 53) ? 1 : 0);
-
-			cell.textContent = `${week}`;
+			cell.textContent = `${getWeek(cellDate)}`;
 			continue;
 		}
-		// reset
-		cell.classList.remove('deactivated');
-		cell.textContent = offsetDate.getDate();
 
-		if ((i + 1) % 8 === 0) cell.classList.add('sunday');
+		// set date of cell
+		updateCell(i, cell, date, cellDate);
 
-		if (!equalMonth(date, offsetDate)) cell.classList.add('deactivated');
-
-		// if (equalDay(date, offsetDate) && equalMonth(date, offsetDate)) cell.classList.add('current');
-
-		offsetDate = getNextDate(offsetDate);
+		// increment date for the next cell
+		cellDate = getNextDate(cellDate);
 	}
 }
 
-function getFirstDate(d) {
-	const first = new Date(d.getFullYear(), d.getMonth(), 1);
-	const offset = 1 - getDay(d);
+function updateCell(i, cell, date, offsetDate) {
+	cell.classList.remove('deactivated');
+	cell.textContent = offsetDate.getDate();
+	cell.setAttribute('date', offsetDate.toDateString());
 
-	first.setDate(offset);
-	return first;
-}
+	if ((i + 1) % 8 === 0) cell.classList.add('sunday');
 
-function getNextDate(d, i = 1) {
-	return new Date(d.getFullYear(), d.getMonth(), d.getDate() + i);
-}
-
-// function equalDay(a, b) {
-// 	return a.getDate() === b.getDate();
-// }
-
-function equalMonth(a, b) {
-	return a.getMonth() === b.getMonth();
-}
-
-function equalYear(a, b) {
-	return a.getFullYear() === b.getFullYear();
-}
-
-function getWeeksAmount(d) {
-	const year = d.getFullYear();
-	const leap = isLeap(year);
-	let firstDay = getDay(new Date(year, 0, 1));
-
-	return (leap && firstDay === 2) ? 53 : (firstDay === 3) ? 53 : 52;
+	if (!equalMonth(date, offsetDate)) cell.classList.add('deactivated');
 }

@@ -1,4 +1,4 @@
-import { getNumDays, date2values } from './utils.js';
+import { getNumDaysOfMonth, dateToValsObj } from './utils.js';
 import { Spinner } from './spinner.js';
 
 const optionsDefault = {
@@ -38,17 +38,20 @@ export class Selector {
 			...options
 		};
 
-		this.parent = parent;
-		this.parent.classList.add('spinner-date-time');
-
 		this.spinners = [];
+
+		const wrap = document.createElement('div');
+		wrap.classList.add('spinners-wrap')
+
+		this.parent = parent;
+		this.parent.appendChild(wrap);
 
 		for (const [index, values] of options.values.entries()) {
 			values.callback = this.update.bind(this);
-			this.spinners[index] = new Spinner(parent, values);
+			this.spinners[index] = new Spinner(wrap, values);
 
 			if (index === 3) {
-				const elt = this.parent.appendChild(document.createElement('div'));
+				const elt = wrap.appendChild(document.createElement('div'));
 				elt.innerHTML = ':';
 				elt.classList.add('divider');
 			}
@@ -56,18 +59,15 @@ export class Selector {
 
 		this.callback = options.callback;
 
-		// store reference
-		this.date = options.date;
 		// create default key:value pairs
 		this.values = options.values.reduce((result, { label, min }) => ({ ...result, [label]: min }), {});
+
 		// set values
-		this.setDate(this.date);
+		this.setDate(options.date);
 	}
 
 	setDate(date, smooth = false) {
-		this.values = date2values(date);
-
-		// console.log(date, this.values)
+		this.values = dateToValsObj(date);
 
 		this.spinners[2].setByValue(this.values.year, smooth);
 		this.spinners[1].setByIndex(this.values.month - 1, smooth);
@@ -76,16 +76,25 @@ export class Selector {
 		this.spinners[3].setByIndex(this.values.hour, smooth);
 		this.spinners[4].setByIndex(this.values.minute, smooth);
 	}
+	get date() {
+		return new Date(
+			this.values.year,
+			this.values.month - 1,
+			this.values.day,
+			this.values.hour,
+			this.values.minute
+		)
+	}
 
+	/**@todo */
 	update(label, value) {
-		console.log(label, value)
 		if (
 			(label === 'month' && value !== this.values.month) ||
 			(label === 'year' && value !== this.values.year)
 		) {
 			const numDays = (label === 'month')
-				? getNumDays(value, this.values.year)
-				: getNumDays(this.values.month, value);
+				? getNumDaysOfMonth(value, this.values.year)
+				: getNumDaysOfMonth(this.values.month, value);
 
 			const target = this.spinners[0];
 			target.itemCount = numDays;
