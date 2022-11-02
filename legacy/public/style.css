@@ -44,21 +44,12 @@ body {
 h1 {
   font-size: 3.2em;
   line-height: 1.1;
-  margin-bottom: 0.325em;
 }
 
 main {
   width: 100%;
   max-width: 640px;
   padding: 1.5rem 0;
-}
-
-article {
-  margin: 0.5em 0 1em;
-}
-
-article div-spinner {
-  margin-right: 1rem;
 }
 
 button {

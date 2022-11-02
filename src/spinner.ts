@@ -1,4 +1,15 @@
-import { debounce } from './utils.js';
+// import { debounce } from './utils.js';
+
+interface optionsDefault {
+	min: number,
+	max: number,
+	step: number,
+	index: number,
+	name: string,
+	looping: boolean,
+	infinite: boolean,
+	callback: () => void | null
+}
 
 const optionsDefault = {
 	min: 1,
@@ -6,11 +17,32 @@ const optionsDefault = {
 	step: 1,
 	index: 0,
 	name: 'default',
+	looping: false,
+	infinite: false,
 	callback: null
 };
 
 export class Spinner {
-	constructor (parent, options) {
+	name: string;
+	callback: ((name: string, value: number|null) => void) | null;
+
+	parent: HTMLElement;
+	element: HTMLElement;
+
+	itemHeight: number;
+	itemCount: number;
+	itemWraps: HTMLElement[];
+
+	wrapIndex: number;
+	itemIndex: number;
+	currentItem: HTMLElement | null;
+
+	io: IntersectionObserver;
+
+	constructor(
+		parent: HTMLElement,
+		options: optionsDefault
+	) {
 		options = {
 			...optionsDefault,
 			...options
@@ -22,6 +54,7 @@ export class Spinner {
 		this.parent = parent;
 		this.element = document.createElement('div');
 		this.element.classList.add('spinner', options.name);
+		this.element.setAttribute('tabindex', '0')
 
 		this.parent.appendChild(this.element);
 
@@ -34,8 +67,8 @@ export class Spinner {
 			item.innerText = `${options.min + i % this.itemCount}`.padStart(2, '0');
 			this.itemWraps[0].appendChild(item);
 		}
-		this.itemWraps.push(this.itemWraps[0].cloneNode(true));
-		this.itemWraps.push(this.itemWraps[0].cloneNode(true));
+		this.itemWraps.push(this.itemWraps[0].cloneNode(true) as HTMLDivElement);
+		this.itemWraps.push(this.itemWraps[0].cloneNode(true) as HTMLDivElement);
 		for (const itemWrap of this.itemWraps) this.element.appendChild(itemWrap);
 
 		this.itemHeight = this.itemWraps[0].children[0].scrollHeight;
@@ -57,14 +90,23 @@ export class Spinner {
 		this.io = new IntersectionObserver(this.observe.bind(this), optionsIO);
 		for (const itemWrap of this.itemWraps) this.io.observe(itemWrap);
 
-		this.element.addEventListener('scroll', debounce(this.snap.bind(this), 150));
+		// this.element.addEventListener('scroll', debounce(this.snap.bind(this), 150));
 	}
 
 	get value() {
-		return (this.currentItem) ? parseFloat(this.currentItem.textContent) : null;
+		if (this.currentItem === null) {
+			throw new Error("Current Item is null");
+		}
+
+		return (this.currentItem?.textContent)
+			? parseFloat(this.currentItem.textContent)
+			: null;
 	}
 
-	setByIndex(relItemIndex, smooth = false) {
+	setByIndex(
+		relItemIndex: number,
+		smooth: boolean = false
+	) {
 		const newScrollTop = (relItemIndex + this.itemCount - 1) * this.itemHeight;
 
 		this.wrapIndex = 1;
@@ -81,12 +123,15 @@ export class Spinner {
 
 		this.element.scrollTop = newScrollTop;
 	}
-	setByValue(value, smooth = false) {
+	setByValue(
+		value: string,
+		smooth: boolean = false
+	) {
 		if (typeof value !== 'string') value = `${value}`.padStart(2, '0');
 
 		// console.log(value)
 
-		const relItemIndex = [...this.itemWraps[1].children] .reduce((result, item, index) => (result > -1 || value !== item.textContent) ? result : index, -1);
+		const relItemIndex = Array.from(this.itemWraps[1].children).reduce((result, item, index) => (result > -1 || value !== item.textContent) ? result : index, -1);
 
 		if (relItemIndex < 0) return;
 
@@ -95,21 +140,21 @@ export class Spinner {
 	setCurrentItem() {
 		this.currentItem?.classList.remove('current');
 
-		this.currentItem = this.itemWraps[this.wrapIndex].children[this.itemIndex];
+		this.currentItem = this.itemWraps[this.wrapIndex].children[this.itemIndex] as HTMLParagraphElement;
 		this.currentItem.classList.add('current');
 	}
 
-	deactivateItem(index) {
+	deactivateItem(index: number) {
 		for (const itemWrap of this.itemWraps) {
 			itemWrap.children[index].classList.add('deactivated');
 		}
 	}
-	activateItem(index) {
+	activateItem(index: number) {
 		for (const itemWrap of this.itemWraps) {
 			itemWrap.children[index].classList.remove('deactivated');
 		}
 	}
-	observe(entries) {
+	observe(entries: IntersectionObserverEntry[]) {
 		if (this.element.scrollTop === 0) {
 			this.element.scrollTop = this.itemWraps[0].scrollHeight - this.itemHeight;
 			return;
@@ -149,6 +194,8 @@ export class Spinner {
 		this.wrapIndex = Math.floor(absItemIndex / this.itemCount);
 		this.itemIndex = absItemIndex % this.itemCount;
 		this.setCurrentItem();
+
+		// if (this.callback === null) return;
 
 		this.callback && this.callback(this.name, this.value);
 	}

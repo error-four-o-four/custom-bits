@@ -88,7 +88,6 @@ fieldset {
 }
 
 #selector {
-	height: 6em;
 	z-index: 1;
 
 	font-size: 1.5em;
@@ -126,69 +125,6 @@ fieldset {
 	color: #fff;
 	background-color: #404040;
 	box-shadow: inset 0 0 4px 0 #0009;
-}
-
-.spinners-wrap {
-	display: flex;
-	width: min-content;
-	height: 100%;
-	margin: 0 auto;
-}
-
-.spinner {
-	flex: 1 1 min-content;
-	height: 100%;
-	padding: 0 0.375em;
-	overflow: visible scroll;
-
-	color: #a0a0a0;
-	font-weight: 400;
-	text-align: center;
-
-	cursor: grab;
-}
-
-.spinners-wrap > div.divider {
-	flex: 1 1 min-content;
-	/* max-width: 0.25em; */
-	padding: 2em 0;
-
-	color: #b4b4b4;
-	font-weight: bold;
-	text-align: center;
-}
-
-/* spinner and divider */
-.spinner.year {
-	/* border-right: var(--border); */
-	padding-right: 0.75em;
-}
-
-.spinner.hour {
-	position: relative;
-	padding-left: 0.75em;
-}
-
-/* hide scrollbar */
-.spinner {
-	scrollbar-width: none;
-}
-.spinner::-webkit-scrollbar {
-  display: none;
-}
-
-.spinner p {
-	user-select: none;
-	text-align: center;
-}
-
-.spinner p.deactivated {
-	display: none;
-}
-
-.spinner p.current {
-	color: #ddd;
-	font-weight: bold;
 }
 
 

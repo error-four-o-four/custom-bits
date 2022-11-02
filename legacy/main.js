@@ -1,11 +1,16 @@
+import './src/css/spinner.css'
 import './src/css/button.css';
 import './src/css/dialog.css';
 import './src/css/calendar.css';
 
 import { toLocaleDate } from './src/utils.js';
 
+import { Spinner } from './src/spinner.js';
 import { Selector } from './src/selector.js';
 import { Calendar } from './src/calendar.js';
+
+
+const spinner = new Spinner(document.querySelector('.spinner-test'))
 
 const dialogButton = document.getElementById('main-dialog-button');
 const dialogElement = document.getElementById('main-dialog');
@@ -53,7 +58,8 @@ function closeModal() {
 	document.body.classList.remove('no-scroll', 'no-scroll-bar');
 
 	if (dialogElement.returnValue === 'cancel') {
-		selector.date = dialogDate;
+		selector.setDate(dialogDate);
+		calendar.setDate(dialogDate);
 		return;
 	};
 

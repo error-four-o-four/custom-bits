@@ -1,0 +1,105 @@
+div-spinner {
+	display: inline-block;
+	position: relative;
+
+	top: 0;
+	left: 0;
+	margin: 0;
+	padding: 0;
+
+	vertical-align: text-top;
+
+	outline-width: 2px;
+	outline-style: solid;
+	outline-color: transparent;
+	outline-offset: 0;
+	border-radius: 0.25em;
+
+	transition: outline-color .3s ease, outline-offset 0.3s ease;
+}
+
+div-spinner:focus-visible {
+	outline-color: #fffa;
+	outline-offset: 0.25em;
+}
+
+#wrapper {
+	/* display: inline-block; */
+	position: relative;
+
+	min-width: 2rem;
+	height: 6rem;
+
+	overflow: hidden;
+	padding: 0 0.375em;
+	margin: 0;
+
+	color: #a0a0a0;
+	font-size: 1rem;
+	font-weight: 400;
+	text-align: center;
+	line-height: 2rem;
+
+	border: 1px solid #aaa;
+	border-radius: 0.25em;
+	background: #1a1a1a;
+
+	cursor: grab;
+}
+
+
+
+#content {
+	position: relative;
+	padding: 2em 0;
+}
+
+span {
+	display: block;
+	user-select: none;
+}
+
+span.current {
+	color: #ddd;
+	font-weight: bold;
+}
+
+
+
+.spinners-wrap {
+	display: flex;
+	width: min-content;
+	height: 100%;
+	margin: 0 auto;
+}
+
+.spinner:not(.default) {
+	flex: 1 1 min-content;
+	/* font-size: 1.25em; */
+}
+
+.spinners-wrap > div.divider {
+	flex: 1 1 min-content;
+	/* max-width: 0.25em; */
+	padding: 2em 0;
+
+	color: #b4b4b4;
+	font-weight: bold;
+	text-align: center;
+}
+
+/* spinner and divider */
+.spinner.year {
+	/* border-right: var(--border); */
+	padding-right: 0.75em;
+}
+
+.spinner.hour {
+	position: relative;
+	padding-left: 0.75em;
+}
+
+
+.spinner p.deactivated {
+	display: none;
+}
