@@ -6,9 +6,10 @@
 	- [x] Number Selector
 		- [ ] attribute `name`
 		- [x] ~~use `.toggleAttribute()` => booleans~~
-		- [ ] implement `.stepUp()` and `.stepDown()`
-		- [ ] validate min/max when infinite\
-		infinite => inifinite-start/infinite-end
+		- [x] implement `.stepUp()` and `.stepDown()`
+		- [x] ~~validate min/max when infinite~~\
+		~~infinite => inifinite-start/infinite-end~~\
+		use offset property
 	- [ ] String Selector (with slots)
 	- [ ] Proto Selector (?)
 	- [x] Calendar
