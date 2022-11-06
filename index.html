@@ -11,18 +11,79 @@
 
   <body>
     <main>
-      <h1>Fancy Spinner Component</h1>
-      <article> Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
-        labore et dolore magna aliquyam </article>
-      <article>
-        <div-spinner min="1" max="15"></div-spinner> This is a regular element
-      </article>
-      <article>
-        <div-spinner min="1" max="15" looping></div-spinner> This element loops
-      </article>
-      <article>
-        <div-spinner min="1" max="15" infinite></div-spinner> And this one does it infinitely
-      </article>
+      <section>
+        <h1>Fancy Web Components</h1>
+        <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et
+          dolore magna aliquyam</p>
+      </section>
+      <section>
+        <h2>A Calendar Component</h2>
+        <article class="flex-1-2">
+          <pre>&lt;ui-calendar&gt;&lt;&sol;ui-calendar&gt;</pre>
+          <div>
+            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+              et dolore magna aliquyam</p>
+          </div>
+          <div>
+            <ui-calendar></ui-calendar>
+          </div>
+        </article>
+      </section>
+      <section>
+        <h2>A Number Spinner Component</h2>
+
+        <article class="flex-2-1">
+          <pre>&lt;ui-number pad="2" value="08"&gt;&lt;&sol;ui-number&gt;</pre>
+          <div>
+            <p>This is a regular element</p>
+            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+              et dolore magna aliquyam</p>
+          </div>
+          <div class="min-content">
+            <ui-number value="08" pad="2"></ui-number>
+          </div>
+        </article>
+
+        <article class="flex-2-1">
+          <pre>&lt;ui-number min="5" max="25" looping&gt;&lt;&sol;ui-number&gt;</pre>
+          <div>
+            <p>This element loops</p>
+            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+              et dolore magna aliquyam</p>
+          </div>
+          <div class="min-content">
+            <ui-number min="5" max="25" looping></ui-number>
+          </div>
+        </article>
+
+        <article class="flex-2-1">
+          <pre>&lt;ui-number value="50" infinite&gt;&lt;&sol;ui-number&gt;</pre>
+          <div>
+            <p>And this one does it infinitely</p>
+          </div>
+          <div class="min-content">
+            <ui-number value="50" infinite></ui-number>
+          </div>
+        </article>
+<!--
+        <article class="flex-2-1">
+          <div>
+            <p>Set attributes dynamically</p>
+            <p>
+              <button id="decrease-min" type="button">Decrease &lsquo;min&rsquo;</button>
+              <button id="increase-min" type="button">Increase &lsquo;min&rsquo;</button>
+            </p>
+            <p>
+              <button id="decrease-max" type="button">Decrease &lsquo;max&rsquo;</button>
+              <button id="increase-max" type="button">Increase &lsquo;max&rsquo;</button>
+            </p>
+          </div>
+          <div class="min-content">
+            <ui-number id="ui-interactive" looping></ui-number>
+          </div>
+        </article>
+         -->
+      </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>

@@ -1,61 +1,6 @@
-// /////////////////////////// FN UTILS
+export const toISODateString = (d: Date) => `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`
 
-// export const debounce = (func, wait) => {
-//   let timeout;
-//   return function () {
-//     const ctxt = this,
-//       args = arguments;
-
-//     clearTimeout(timeout);
-//     timeout = setTimeout(() => func.apply(ctxt, args), wait);
-//   };
-// };
-
-interface fnWithArgs {
-  (...args: any[]): any
-}
-
-export const debounce = (fn: fnWithArgs, ms: number = 150): () => void => {
-  let timer: ReturnType<typeof setTimeout>;
-
-  return function debouncedFn(this: any) {
-    const ctxt = this;
-    const args = Array.from(arguments);
-    if (timer) {
-      clearTimeout(timer);
-    }
-    timer = setTimeout(() => fn.apply(ctxt, args), ms);
-  }
-
-}
-
-
-export const supportsTouch = ():boolean => {
-	return window && 'ontouchstart' in window;
-}
-
-
-export const add = (item: any, arr: any[]) => {
-	if (arr.indexOf(item) < 0) arr.push(item);
-}
-
-export const rem = (item:any, arr: any[]) => {
-	const index = arr.indexOf(item);
-
-	if (arr.length === 1 || index === arr.length - 1) {
-		arr.pop();
-		return;
-	}
-
-	arr[index] = arr.pop();
-}
-
-
-
-// /////////////////////////// DATE UTILS
-
-
-export const toLocaleDate = (d: { toLocaleString: (arg0: string, arg1: { dateStyle: string; timeStyle: string; }) => any; }) => d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' });
+export const toLocaleDate = (d: Date) => d.toLocaleString(navigator.language, { dateStyle: 'short', timeStyle: 'short' });
 
 export const getFirstDateOfYear = (d: Date): Date => new Date(d.getFullYear(), 0, 1);
 

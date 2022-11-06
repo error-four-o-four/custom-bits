@@ -9,14 +9,25 @@
 	padding-right: 2em;
 }
 
+*, ::before, ::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
 dialog {
 	--border-radius: 0.75rem;
 	--border: 1px solid #666;
 
+	/* reset */
 	all: unset;
-	position: fixed;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
 
 	/* necessary to calculate dimensions */
+	position: fixed;
 	display: block;
 
 	/* hide dialog */
@@ -27,13 +38,6 @@ dialog {
 	height: 100%;
 	overflow: visible;
 
-	margin: auto;
-	padding: 0;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-
 	font-size: 1rem;
 
 	border: none;
@@ -41,6 +45,7 @@ dialog {
 }
 
 dialog[open] {
+	/* show dialog */
 	z-index: 1;
 	visibility: visible;
 }
@@ -54,15 +59,13 @@ form {
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
-	position: relative;
 
 	width: 100%;
 	height: 100%;
+	padding: 1rem;
 }
 
 fieldset {
-	all: unset;
-
 	position: relative;
 	width: 100%;
 	min-width: 320px;
@@ -75,6 +78,7 @@ fieldset {
 }
 
 #selector::before {
+	display: none;
 	content: "";
 	position: absolute;
 	width: 100%;
@@ -99,6 +103,12 @@ fieldset {
 
 	border-radius: var(--border-radius) var(--border-radius) 0 0;
 	background: #242424;
+}
+
+#selector-wrap {
+	display: flex;
+	width: min-content;
+	margin: 0 auto;
 }
 
 #calendar {

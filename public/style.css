@@ -15,7 +15,9 @@
   -webkit-text-size-adjust: 100%;
 }
 
-*, ::before, ::after {
+*,
+::before,
+::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -26,6 +28,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -47,19 +50,82 @@ h1 {
   margin-bottom: 0.325em;
 }
 
+h2 {
+  margin: 1.5em 0 0.5em;
+}
+
+p {
+  margin-bottom: 0.5rem;
+}
+
 main {
   width: 100%;
   max-width: 640px;
   padding: 1.5rem 0;
 }
 
-article {
+section {
+  position: relative;
   margin: 0.5em 0 1em;
 }
-
-article div-spinner {
-  margin-right: 1rem;
+article {
+  position: relative;
+  padding: 0.5em 0 2.5em;
 }
+
+article > div {
+  max-width: 100%;
+}
+
+article.flex-1-2,
+article.flex-2-1 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+article.flex-2-1 > div:nth-of-type(1),
+article.flex-1-2 > div:nth-of-type(2) {
+  flex: 2 1;
+}
+
+article.flex-2-1 > div:nth-of-type(2),
+article.flex-1-2 > div:nth-of-type(1) {
+  flex: 1 1;
+}
+
+article.flex-2-1 > div.min-content,
+article.flex-1-2 > div.min-content {
+  flex: 0 0 min-content;
+}
+
+
+article pre {
+  width: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+
+article code {
+  display: inline-block;
+  margin-bottom: 0.25em;
+}
+
+article pre,
+article code {
+  padding: 0.325rem 0.5rem;
+  border: 1px solid #fff3;
+  border-radius: 0.125em;
+  background-color: #0003;
+}
+
+/* ui-number {
+  --item-height: 3rem;
+} */
+
+/* ui-calendar {
+  width: 100%;
+} */
 
 button {
   border-radius: 0.25rem;
@@ -88,22 +154,24 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
 }
 
 .sr-only {
-	border: 0;
-	clip: rect(0 0 0 0);
-	height: 1px;
-	margin: -1px;
-	overflow: hidden;
-	padding: 0;
-	position: absolute;
-	white-space: nowrap;
-	width: 1px;
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
 }

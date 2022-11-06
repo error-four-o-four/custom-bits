@@ -1,17 +1,21 @@
-import { HTMLSpinnerElement } from "./spinner/component";
+import './calendar'
+import './selector'
 
-window.customElements.define('div-spinner', HTMLSpinnerElement);
+// const interactive = document.getElementById('ui-interactive');
+// const decreaseMin = document.getElementById('decrease-min');
+// const increaseMin = document.getElementById('increase-min');
+// const decreaseMax = document.getElementById('decrease-max');
+// const increaseMax = document.getElementById('increase-max');
+// const buttons = [decreaseMin, increaseMin, decreaseMax, increaseMax] as HTMLElement[];
 
-declare global {
-	interface HTMLElementTagnameMap {
-		'div-spinner': HTMLSpinnerElement
-	}
-}
+// window.addEventListener('click', handleInteractiveClick)
 
-const date = new Date();
+// function handleInteractiveClick(ev: MouseEvent) {
+// 	if (ev.target === null) return;
 
-const spinners = document.getElementsByTagName('div-spinner') as HTMLCollectionOf<HTMLSpinnerElement>;
+// 	if (!(ev.target instanceof HTMLButtonElement)) return;
 
-spinners[0].setValue(`${date.getDate()}`.padStart(2, '0'));
-spinners[1].setValue(`${date.getMonth() + 1}`.padStart(2, '0'));
-spinners[2].setValue(`${date.getFullYear()}`);
+// 	if (!(buttons.includes(ev.target))) return;
+
+// 	console.log(interactive, ev.target)
+// }
