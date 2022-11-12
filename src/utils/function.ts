@@ -24,7 +24,7 @@ export const constrain = (
 
 
 
-interface fnWithArgs {
+export interface fnWithArgs {
 	(...args: any[]): any
 }
 

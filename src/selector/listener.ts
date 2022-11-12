@@ -2,7 +2,8 @@
 import { deactivateScrollWhileFocused, supportsTouch } from '../utils/environment';
 
 import { HTMLSelectorElement } from './component';
-import { requestAnimation, animatePosition } from './animation';
+import { requestSpinAnimation } from './animation';
+import { renderOnPositionChange } from './renderer';
 
 let addedWindowListener = false;
 
@@ -67,18 +68,18 @@ function handleTouchMove(ev: TouchEvent) {
 
 	if (touch === undefined) return;
 
-	evTarget.velocity = touch.pageY - evTouch.pageY;
+	evTarget.properties.velocity = touch.pageY - evTouch.pageY;
+	evTarget.properties.updatePositionByVelocity();
 	evTouch = touch;
 
-	animatePosition(evTarget)
+	renderOnPositionChange(evTarget);
 }
 function handleTouchEnd(ev: TouchEvent): void {
 	if (evTarget === null) return;
 
 	console.log(ev.type);
 
-	evTarget.spinning = true;
-	requestAnimation(evTarget);
+	requestSpinAnimation(evTarget);
 
 	evTarget.blur();
 	evTarget = null;
@@ -98,17 +99,18 @@ function handleMouseDown(ev: MouseEvent) {
 function handleMouseMove(ev: MouseEvent) {
 	if (evTarget === null || pClientY === null) return
 
-	evTarget.velocity = ev.clientY - pClientY;
+	evTarget.properties.velocity = ev.clientY - pClientY;
+	evTarget.properties.updatePositionByVelocity();
 	pClientY = ev.clientY;
-	animatePosition(evTarget);
+
+	renderOnPositionChange(evTarget);
 }
 function handleMouseUp(ev: MouseEvent): void {
 	if (evTarget === null) return;
 
 	console.log(ev.type);
 
-	evTarget.spinning = true;
-	requestAnimation(evTarget);
+	requestSpinAnimation(evTarget);
 
 	evTarget = null;
 	pClientY = null;
