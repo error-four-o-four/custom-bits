@@ -1,12 +1,16 @@
 import { addTabindexAttributes } from '../utils/environment';
+import { validateBoolean, validatedNumber } from './utils';
 
-import { getIndexOfValue, sanitizeNumberAsString, sanitizeStringAsNumber } from './utils';
-import { requestAnimation, loop, setPosition } from './animation';
+import { SelectorProperties } from './properties';
+
+import { renderOnValueChanged } from './renderer';
+import { requestSnapAnimation } from './animation';
 import { addListener } from './listener';
 
 import cssProperties from './template.css';
-import { constrain } from '../utils/function';
 // import htmlContent from './template.html?raw';
+
+/**@logic infinite by default! */
 
 const cssTemplate = document.createElement('template');
 cssTemplate.innerHTML = `<style>${cssProperties}</style>\n`;
@@ -14,283 +18,185 @@ cssTemplate.innerHTML = `<style>${cssProperties}</style>\n`;
 // const htmlTemplate = document.createElement('template');
 // htmlTemplate.innerHTML = htmlContent;
 
-interface ElementAttributes {
-	[key: string]: boolean | string | number
-	index: number
-	// reflected as attributes
-	value: string
-	min: number
-	max: number
-	off: number
-	looping: boolean
-	infinite: boolean
-	pad: number
-}
+export type attributeNum = number | null
+export type attributeBool = boolean | null
 
-const defaultAttributes: ElementAttributes = {
-	index: 0,
-	value: '0',
-	min: 0,
-	max: 9,
-	off: 10,
-	looping: false,
-	infinite: false,
-	pad: 1,
-}
+export type observedAttributes = [
+	attributeNum,
+	attributeNum,
+	attributeNum,
+	attributeNum,
+	attributeBool
+]
 
 export class HTMLSelectorElement extends HTMLInputElement {
 	static get observedAttributes(): string[] {
-		return ['min', 'max', 'value', 'pad', 'looping', 'infinite']
+		return ['pad', 'min', 'max', 'value', 'looping']
 	}
-	static get formAssociated() { return true; }
 
-	private _internals: ElementInternals
-	private _properties: ElementAttributes
+	static get formAssociated(): boolean { return true; }
+
+	static getAttributes(target: HTMLSelectorElement): observedAttributes {
+		return this.observedAttributes.map((attr) => (attr === 'looping')
+			? validateBoolean(target.getAttribute(attr))
+			: validatedNumber(target.getAttribute(attr))
+		) as observedAttributes
+	}
+
+	[key: string]: any
+
+	// private _internals: ElementInternals
+	public properties: SelectorProperties
 
 	public shadow: ShadowRoot
+
 	public content: HTMLUListElement;
+	public item: Element | null;
 
-	public maxHeight: number
-	public itemHeight: number
-	public velocity: number
-	public spinning: boolean
-	public snapping: boolean
-
-	public item: HTMLElement | null
+	public onsnapend: (() => void) | null
 
 	constructor() {
 		super();
 
-		this.maxHeight = 0;
-		this.itemHeight = 0;
-		this.velocity = 0;
-		this.spinning = false;
-		this.snapping = false;
-
-		this.item = null;
-
-		// this.name = 'default';
-		this._internals = this.attachInternals();
-		this._properties = { ...defaultAttributes };
+		this.properties = new SelectorProperties(this);
+		// this._internals = this.attachInternals();
 
 		this.shadow = this.attachShadow({ mode: 'open' });
 
+		// create default content
 		this.content = document.createElement('ul');
 		this.content.id = 'content';
 
-		console.log(this._internals.shadowRoot)
+		this.item = null;
+		this.onsnapend = null;
 	}
 
 	public connectedCallback(): void {
+		// create content wrapper
 		const wrapper = document.createElement('div');
 		wrapper.id = 'wrapper';
-
-		this.shadow.appendChild(cssTemplate.content.cloneNode(true));
-		this.shadow.appendChild(wrapper);
-
 		wrapper.appendChild(this.content);
 
+		if (!this.hasAttribute('value')) this.setAttribute('value', this.value);
+
+		// connect
+		this.shadow.appendChild(cssTemplate.content.cloneNode(true));
+		this.shadow.appendChild(wrapper);
+		renderOnValueChanged(this);
+
+		// store rendered layout values (requires connection)
+		this.properties.updateMaxHeight();
+		this.properties.updateItemHeight();
+
+		// propagate attributes
+		this.properties.updateItem();
+		this.properties.updatePositionByIndex();
+
 		addTabindexAttributes(this);
-
-		if (!this.infinite) {
-			const ii = this._properties.max - this._properties.min + 1;
-
-			for (let i = 0; i < ii; i += 1) {
-				const item = document.createElement('li');
-				item.innerText = `${this._properties.min + i}`.padStart(this._properties.pad, '0');
-				this.content.appendChild(item);
-			}
-		}
-		else {
-			const min = this.valueAsNumber - this._properties.off;
-			const max = this.valueAsNumber + this._properties.off;
-
-			for (let i = min; i < max; i += 1) {
-				const item = document.createElement('li');
-				item.innerText = sanitizeNumberAsString(i, this._properties.pad)
-				this.content.appendChild(item);
-			}
-		}
-
-		this.maxHeight = -1 * (this.content.scrollHeight - wrapper.offsetHeight);
-		this.itemHeight = this.content.children[0].scrollHeight;
-
-		setValue(this, this.value)
-
-		// handle animations globally/functionally
-		if (this.looping || this.infinite) loop(this);
-
 		addListener(this);
+
+		console.log(this);
 	}
 
 	////////////////////////////////////////////////////// SET GET ATTRIBUTES
 
 	attributeChangedCallback(attribute: string, oldValue: string, newValue: string) {
-		// called when
-		// tag has attribute e.g. 'looping'
 		// .setAttribute() was invoked
 		if (oldValue === newValue) return;
 
-		if (typeof this._properties[attribute] === 'boolean') {
-			// looping, infinite
-			this._properties[attribute] = (newValue === '') ? true : false;
-		}
+		// return if shadow dom isn't attached yet
+		if (this.shadow.childElementCount === 0) return;
 
-		if (typeof this._properties[attribute] === 'string') {
-			// name, value
-			this._properties[attribute] = newValue;
-		}
+		// return during animation
+		/**@todo update properties and attributes on animation end */
+		if (attribute === 'value' && this.properties.snapping) return;
 
-		// if (attribute === 'value') {
-		// 	let num = sanitizeStringAsNumber(newValue);
-
-		// 	if (num === null) throw new Error(`Not a valid ${attribute} value: ${newValue}`);
-
-		// 	let val = `${num}`.padStart(this._properties.pad, '0');
-		// 	this._properties.index = Math.max(
-		// 		this._properties.min, Math.min(
-		// 			this._properties.max, getIndexOfValue(this, val)
-		// 		)
-		// 	)
-		// }
-
-		if (typeof this._properties[attribute] === 'number') {
-			const num = sanitizeStringAsNumber(newValue);
-
-			if (num === null) throw new Error(`Not a valid ${attribute} value: ${newValue}`);
-
-			this._properties[attribute] = num;
-		}
+		renderOnValueChanged(this);
 	}
 
 	////////////////////////////////////////////////////// GET SET ATTRIBUTES VIA PROPERTIES
 
 	get min() {
-		return `${this._properties.min}`;
+		const attr = this.getAttribute('min');
+		return (attr !== null) ? attr : '';
 	}
 	get minAsNumber() {
-		return this._properties.min;
+		const attr = this.getAttribute('min');;
+		return (attr !== null) ? parseInt(attr) : -Infinity;
 	}
-	set min(val: string) {
-		const num = sanitizeStringAsNumber(val);
-		if (num !== null) this.minAsNumber = num;
+
+	set min(str: string) {
+		this.setAttribute('min', str);
 	}
 	set minAsNumber(num: number) {
 		this.setAttribute('min', `${num}`);
 	}
 
 	get max() {
-		return `${this._properties.max}`;
+		const attr = this.getAttribute('max');
+		return (attr !== null) ? attr : '';
 	}
 	get maxAsNumber() {
-		return this._properties.max;
+		const attr = this.getAttribute('max');
+		return (attr !== null) ? parseInt(attr) : Infinity;
 	}
-	set max(val: string) {
-		const num = sanitizeStringAsNumber(val);
-		if (num !== null) this.maxAsNumber = num;
+	set max(str: string) {
+		this.setAttribute('min', str);
 	}
 	set maxAsNumber(num: number) {
 		this.setAttribute('max', `${num}`);
 	}
 
 	get value() {
-		return `${this._properties.value}`.padStart(this.pad, '0');
+		const attr = this.getAttribute('value');
+		return (attr !== null) ? attr : '0';
 	}
 	get valueAsNumber() {
-		return parseInt(this._properties.value);
+		const attr = this.getAttribute('value');
+		return (attr !== null) ? parseInt(attr) : 0;
+
 	}
-	set value(val: string) {
-		let num = sanitizeStringAsNumber(val);
-
-		if (!this.infinite) num = constrain(num, this._properties.min, this._properties.max)
-
-		val = sanitizeNumberAsString(num, this._properties.pad);
-
-		setValue(this, val);
-		this.setAttribute('value', val)
+	set value(str: string) {
+		this.setAttribute('value', str)
 	}
 	set valueAsNumber(num: number) {
-		let val;
-
-		if (!this.infinite) num = constrain(num, this._properties.min, this._properties.max);
-		val = sanitizeNumberAsString(num, this._properties.pad);
-
-		setValue(this, val);
-		this.setAttribute('value', val)
+		this.setAttribute('value', `${num}`);
 	}
 
 	get pad() {
-		return this._properties.pad;
+		return this.getAttribute('pad') || '1';
 	}
-	set pad(num: number) {
-		this.setAttribute('pad', `${num}`);
+	get padAsNumber() {
+		const attr = this.pad as string;
+		return (attr !== '') ? parseInt(attr) : 1;
+	}
+	set pad(value: string | number) {
+		if (typeof value === 'number') value = `${value}`
+		this.setAttribute('pad', value);
 	}
 
 	get looping() {
-		return this._properties.looping;
+		return this.hasAttribute('looping');
 	}
 	set looping(bool: boolean) {
 		(bool) ? this.setAttribute('looping', '') : this.removeAttribute('looping');
-	}
-	get infinite() {
-		return this._properties.infinite;
-	}
-	set infinite(bool: boolean) {
-		(bool) ? this.setAttribute('infinite', '') : this.removeAttribute('infinite');
-	}
-
-	////////////////////////////////////////////////////// PROPERTIES
-
-	get itemCount() {
-		return this.content.children.length
-	}
-	get itemIndex() {
-		return this._properties.index;
-	}
-	set itemIndex(num: number) {
-		this._properties.index = constrain(num, 0, this.itemCount - 1);
-
-		this.item?.classList.remove('current');
-		this.item = this.content.children[this._properties.index] as HTMLElement;
-		this.item.classList.add('current');
-
-		this.setAttribute('value', this.item.innerText);
 	}
 
 	////////////////////////////////////////////////////// ANIMATED METHODS
 
 	stepDown(n: number = 1): void {
-		this.itemIndex -= n;
-		this.snapping = true;
-		requestAnimation(this)
+		/**@todo buggy */
+		this.properties.index -= n;
+		this.properties.updateItem();
+		requestSnapAnimation(this);
 	}
 	stepUp(n: number = 1): void {
-		this.itemIndex += n;
-		this.snapping = true;
-		requestAnimation(this)
+		/**@todo buggy */
+		this.properties.index += n;
+		this.properties.updateItem();
+		requestSnapAnimation(this);
 	}
 	stepTo() {
-
+		/**@todo*/
 	}
 }
-
-// deactivateItem(index: number)_itemCount {
-// 	for (const itemWrap of this._itemWraps) {
-// 		itemWrap.children[index].classList.add('deactivated');
-// 	}
-// }
-// activateItem(index: number) {
-// 	for (const itemWrap of this._itemWraps) {
-// 		itemWrap.children[index].classList.remove('deactivated');
-// 	}
-// }
-
-function setValue(target: HTMLSelectorElement, value: string): void {
-	target.itemIndex = getIndexOfValue(target, value);
-	setPosition(target, -(target.itemIndex * target.itemHeight))
-
-	if (!target.looping) return;
-
-	loop(target);
-}
-

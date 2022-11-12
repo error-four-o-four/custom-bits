@@ -1,21 +1,38 @@
 import './calendar'
 import './selector'
 
-// const interactive = document.getElementById('ui-interactive');
-// const decreaseMin = document.getElementById('decrease-min');
-// const increaseMin = document.getElementById('increase-min');
-// const decreaseMax = document.getElementById('decrease-max');
-// const increaseMax = document.getElementById('increase-max');
-// const buttons = [decreaseMin, increaseMin, decreaseMax, increaseMax] as HTMLElement[];
+import { HTMLSelectorElement } from './selector/component';
 
-// window.addEventListener('click', handleInteractiveClick)
+const interactive = document.getElementById('ui-interactive') as HTMLSelectorElement;
+const decreaseMin = document.getElementById('decrease-min');
+const increaseMin = document.getElementById('increase-min');
+const decreaseMax = document.getElementById('decrease-max');
+const increaseMax = document.getElementById('increase-max');
+const buttons = [decreaseMin, increaseMin, decreaseMax, increaseMax] as HTMLElement[];
 
-// function handleInteractiveClick(ev: MouseEvent) {
-// 	if (ev.target === null) return;
+window.addEventListener('click', handleInteractiveClick)
 
-// 	if (!(ev.target instanceof HTMLButtonElement)) return;
+function handleInteractiveClick(ev: MouseEvent) {
+	if (ev.target === null) return;
 
-// 	if (!(buttons.includes(ev.target))) return;
+	if (!(ev.target instanceof HTMLButtonElement)) return;
 
-// 	console.log(interactive, ev.target)
-// }
+	if (!(buttons.includes(ev.target))) return;
+
+	if (ev.target === decreaseMin) {
+		const min = interactive.minAsNumber - 1;
+		interactive.setAttribute('min', `${min}`);
+	}
+
+	if (ev.target === increaseMin) {
+		interactive.minAsNumber += 1;
+	}
+}
+
+// const test = document.getElementById('test');
+// console.log(test);
+
+// const test = document.querySelector('ui-number') as HTMLSelectorElement
+// test.setAttribute('looping', 'false')
+// test.value = '10';
+// console.log(test.value, test.content)
