@@ -3,7 +3,7 @@ import { constrain, fnWithArgs } from "../utils/function";
 import { HTMLSelectorElement } from "./component";
 
 export class SelectorProperties {
-	[key: string]: HTMLSelectorElement | string | number | number[] | boolean | fnWithArgs
+	[key: string]: HTMLSelectorElement | string | number | number[] | boolean | fnWithArgs | CustomEvent
 	instance: HTMLSelectorElement
 
 	index: number
@@ -13,6 +13,8 @@ export class SelectorProperties {
 	velocity: number
 	spinning: boolean
 	snapping: boolean
+
+	onsnapendEvent: CustomEvent
 
 	constructor(instance: HTMLSelectorElement) {
 		this.instance = instance;
@@ -25,6 +27,13 @@ export class SelectorProperties {
 		this.velocity = 0;
 		this.spinning = false;
 		this.snapping = false;
+
+		this.onsnapendEvent = new CustomEvent('onsnapend', {
+			detail: {
+				index: this.index,
+				value: this.instance.valueAsNumber,
+			}
+		})
 	}
 
 	get position() {

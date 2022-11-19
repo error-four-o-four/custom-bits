@@ -2,7 +2,7 @@ import { validateAttributes } from "./attributes";
 import { HTMLSelectorElement } from "./component";
 import { sanitizeNumberAsString } from "./utils";
 
-export function renderOnValueChanged(target: HTMLSelectorElement) {
+export function renderPostValueChange(target: HTMLSelectorElement) {
 	validateAttributes(target);
 
 	const [num, values] = getValues(target);
@@ -84,7 +84,7 @@ export function renderOnPositionChange(target: HTMLSelectorElement) {
 	if (target.content.firstElementChild === null || target.content.lastElementChild === null) throw new Error("Element does not exist");
 
 	const position = target.properties.position;
-	const threshold = 1.75 * target.properties.itemHeight;
+	const threshold = 1.25 * target.properties.itemHeight;
 
 	const isAtTop = Math.abs(position) < threshold;
 	const isAtBottom = Math.abs(target.properties.maxHeight - position) < threshold
@@ -107,6 +107,7 @@ export function renderOnPositionChange(target: HTMLSelectorElement) {
 		target.content.removeChild(target.content.lastElementChild);
 
 		target.properties.position = position - target.properties.itemHeight;
+		target.properties.index += 1;
 
 		return;
 	}
@@ -122,6 +123,7 @@ export function renderOnPositionChange(target: HTMLSelectorElement) {
 		target.content.removeChild(target.content.firstElementChild);
 
 		target.properties.position = position + target.properties.itemHeight;
+		target.properties.index -= 1;
 
 		return;
 	}

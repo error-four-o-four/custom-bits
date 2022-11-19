@@ -70,12 +70,10 @@ function spin(target: HTMLSelectorElement) {
 	target.properties.spinning = false;
 	target.properties.snapping = true;
 
-	/**@todo callback */
-	/**@refactor */
 	target.properties.index = Math.round(Math.abs(position) / target.properties.itemHeight);
 	target.properties.updateItem();
 
-	const value = target.textContent;
+	const value = target.item?.textContent;
 
 	if (value) target.setAttribute('value', value);
 }
@@ -87,12 +85,14 @@ function snap(target: HTMLSelectorElement) {
 	if (Math.abs(dy) > 0.5) {
 		target.properties.velocity = 0.25 * dy;
 		target.properties.updatePositionByVelocity();
+		renderOnPositionChange(target);
 		return;
 	}
 
 	target.properties.snapping = false;
 	target.properties.velocity = 0;
-	/**@todo callback */
+	target.properties.updatePositionByIndex();
+	target.properties.updateItem();
 
-	target.properties.updatePositionByIndex()
+	target.dispatchEvent(target.properties.onsnapendEvent)
 }

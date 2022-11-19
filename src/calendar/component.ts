@@ -3,6 +3,7 @@ import htmlContent from './template.html?raw';
 
 import { equalMonth, getFirstMonday, getNextDate, getWeek, toISODateString } from '../utils/date';
 import { addListener } from './listener';
+import { addTabindexAttributes } from '../utils/environment';
 
 const cssTemplate = document.createElement('template');
 cssTemplate.innerHTML = `<style>${cssProperties}</style>\n`;
@@ -32,6 +33,8 @@ export class HTMLCalendarElement extends HTMLInputElement {
 		this.table = null;
 		this.cells = [];
 		this.cell = null;
+
+		console.log(this._internals)
 	}
 
 	public connectedCallback(): void {
@@ -41,8 +44,9 @@ export class HTMLCalendarElement extends HTMLInputElement {
 		this.table = this.shadow.getElementById('content') as HTMLTableElement
 		this.cells = getCells(this.table);
 
-		if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
-		if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '1');
+		addTabindexAttributes(this);
+		// if (!this.hasAttribute('role')) this.setAttribute('role', 'button');
+		// if (!this.hasAttribute('tabindex')) this.setAttribute('tabindex', '1');
 
 		if (this.hasAttribute('value')) this.value = this.getAttribute('value') || ''
 
@@ -60,8 +64,6 @@ export class HTMLCalendarElement extends HTMLInputElement {
 
 		this._value = new Date(value);
 		this._value.setHours(0, 0);
-
-		console.log(this._internals)
 	}
 	public get valueAsDate() {
 		return this._value;
@@ -70,8 +72,6 @@ export class HTMLCalendarElement extends HTMLInputElement {
 		if (!(value instanceof Date)) return;
 
 		this._value = value;
-
-		console.log(this._internals)
 	}
 }
 
@@ -118,7 +118,6 @@ export function updateCurrentCell(target: HTMLCalendarElement) {
 	target.cell?.classList.remove('current');
 	target.cell = getCell(target.cells, target.valueAsDate);
 	target.cell?.classList.add('current');
-
 }
 
 function getCell(cells: HTMLTableCellElement[], date: Date) {

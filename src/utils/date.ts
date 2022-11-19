@@ -36,6 +36,18 @@ export const getWeek = (d: Date) => {
   return 1 + Math.round(((d.getTime() - w.getTime()) / 86400000 - 3 + (w.getDay() + 6) % 7) / 7);
 };
 
+export const getDateOfWeek = (w: number, y: number) => {
+  const simple = new Date(y, 0, 1 + (w - 1) * 7);
+  const start = simple;
+  if (simple.getDay() <= 4) {
+    start.setDate(simple.getDate() - simple.getDay() + 1);
+  }
+  else {
+    start.setDate(simple.getDate() + 8 - simple.getDay());
+  }
+  return start;
+}
+
 export const getFirstMonday = (d: any) => {
   const f = getFirstDateOfMonth(d);
 

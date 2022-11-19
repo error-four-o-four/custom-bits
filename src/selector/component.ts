@@ -3,7 +3,7 @@ import { validateBoolean, validatedNumber } from './utils';
 
 import { SelectorProperties } from './properties';
 
-import { renderOnValueChanged } from './renderer';
+import { renderPostValueChange } from './renderer';
 import { requestSnapAnimation } from './animation';
 import { addListener } from './listener';
 
@@ -53,7 +53,7 @@ export class HTMLSelectorElement extends HTMLInputElement {
 	public content: HTMLUListElement;
 	public item: Element | null;
 
-	public onsnapend: (() => void) | null
+	// public onsnapend: (() => void) | null
 
 	constructor() {
 		super();
@@ -68,7 +68,7 @@ export class HTMLSelectorElement extends HTMLInputElement {
 		this.content.id = 'content';
 
 		this.item = null;
-		this.onsnapend = null;
+		// this.onsnapend = null;
 	}
 
 	public connectedCallback(): void {
@@ -82,7 +82,7 @@ export class HTMLSelectorElement extends HTMLInputElement {
 		// connect
 		this.shadow.appendChild(cssTemplate.content.cloneNode(true));
 		this.shadow.appendChild(wrapper);
-		renderOnValueChanged(this);
+		renderPostValueChange(this);
 
 		// store rendered layout values (requires connection)
 		this.properties.updateMaxHeight();
@@ -95,7 +95,7 @@ export class HTMLSelectorElement extends HTMLInputElement {
 		addTabindexAttributes(this);
 		addListener(this);
 
-		console.log(this);
+		// console.log(this);
 	}
 
 	////////////////////////////////////////////////////// SET GET ATTRIBUTES
@@ -108,10 +108,40 @@ export class HTMLSelectorElement extends HTMLInputElement {
 		if (this.shadow.childElementCount === 0) return;
 
 		// return during animation
-		/**@todo update properties and attributes on animation end */
-		if (attribute === 'value' && this.properties.snapping) return;
+		if (attribute === 'value' && (this.properties.spinning || this.properties.snapping)) return;
 
-		renderOnValueChanged(this);
+		// request animation
+		if (attribute === 'min' || attribute === 'max') {
+			const oldNum = validatedNumber(oldValue);
+			const newNum = validatedNumber(newValue);
+
+			if (
+				oldNum !== null &&
+				newNum !== null && (
+					(
+						attribute === 'min' &&
+						newNum < this.maxAsNumber &&
+						newNum > this.valueAsNumber
+					) || (
+						attribute === 'max' &&
+						newNum > this.minAsNumber &&
+						newNum < this.valueAsNumber
+					)
+				)
+			) {
+				this.addEventListener('onsnapend', () => {
+					renderPostValueChange(this);
+				}, {
+					once: true
+				});
+
+				this.properties.index += (newNum - oldNum);
+				requestSnapAnimation(this);
+				return;
+			}
+		}
+
+		renderPostValueChange(this);
 	}
 
 	////////////////////////////////////////////////////// GET SET ATTRIBUTES VIA PROPERTIES
@@ -185,18 +215,42 @@ export class HTMLSelectorElement extends HTMLInputElement {
 	////////////////////////////////////////////////////// ANIMATED METHODS
 
 	stepDown(n: number = 1): void {
-		/**@todo buggy */
+		if (
+			!this.looping &&
+			this.minAsNumber !== -Infinity &&
+			this.valueAsNumber === this.minAsNumber
+		) {
+			return
+		}
+
+		/**@todo bigger steps */
+
 		this.properties.index -= n;
-		this.properties.updateItem();
 		requestSnapAnimation(this);
+
+		// has to be called after request
+		// otherwise the changes will be applied instantly
+		this.valueAsNumber -= n;
 	}
 	stepUp(n: number = 1): void {
-		/**@todo buggy */
+		if (
+			!this.looping &&
+			this.maxAsNumber !== Infinity &&
+			this.valueAsNumber === this.maxAsNumber
+		) {
+			return
+		}
+
 		this.properties.index += n;
-		this.properties.updateItem();
 		requestSnapAnimation(this);
+
+		// has to be called after request
+		this.valueAsNumber += n;
 	}
-	stepTo() {
-		/**@todo*/
+	stepTo(value: number) {
+		const delta = Math.max(this.minAsNumber, Math.min(this.maxAsNumber, value)) - this.valueAsNumber;
+		/**@todo guard clause*/
+		this.properties.index += delta;
+		requestSnapAnimation(this);
 	}
 }

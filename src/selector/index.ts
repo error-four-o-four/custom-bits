@@ -11,3 +11,9 @@ declare global {
 		'ui-number': HTMLSelectorElement
 	}
 }
+
+declare global {
+	interface HTMLElementEventMap {
+		'onsnapend': CustomEvent
+	}
+}

@@ -1,4 +1,9 @@
-import { getCells, HTMLCalendarElement, updateCells, updateCurrentCell } from "./component";
+import {
+	HTMLCalendarElement,
+	getCells,
+	updateCells,
+	updateCurrentCell
+} from "./component";
 
 const slideInFrames = [
 	{ transform: 'translateX(100%)' },
@@ -8,7 +13,6 @@ const slideOutFrames = [
 	{ transform: 'translateX(-100%)' },
 	{ transform: 'translateX(0%)' },
 ];
-
 const slideOptions: KeyframeAnimationOptions = {
 	duration: 250,
 	fill: 'forwards',

@@ -3,36 +3,37 @@ import './selector'
 
 import { HTMLSelectorElement } from './selector/component';
 
-const interactive = document.getElementById('ui-interactive') as HTMLSelectorElement;
-const decreaseMin = document.getElementById('decrease-min');
-const increaseMin = document.getElementById('increase-min');
-const decreaseMax = document.getElementById('decrease-max');
-const increaseMax = document.getElementById('increase-max');
-const buttons = [decreaseMin, increaseMin, decreaseMax, increaseMax] as HTMLElement[];
+const uiStepTo = document.getElementById('ui-interactive-step') as HTMLSelectorElement;
+const uiMinMax = document.getElementById('ui-interactive-minmax') as HTMLSelectorElement;
+const buttons = Array.from(document.querySelectorAll('button[name=interactive-button]'));
 
-window.addEventListener('click', handleInteractiveClick)
+window.addEventListener('click', handleClick);
 
-function handleInteractiveClick(ev: MouseEvent) {
-	if (ev.target === null) return;
+function handleClick(ev: MouseEvent) {
+	const evTarget = ev.target;
 
-	if (!(ev.target instanceof HTMLButtonElement)) return;
-
-	if (!(buttons.includes(ev.target))) return;
-
-	if (ev.target === decreaseMin) {
-		const min = interactive.minAsNumber - 1;
-		interactive.setAttribute('min', `${min}`);
+	if (
+		evTarget === null ||
+		!(evTarget instanceof HTMLButtonElement) ||
+		!(buttons.includes(evTarget))
+	) {
+		return;
 	}
 
-	if (ev.target === increaseMin) {
-		interactive.minAsNumber += 1;
+	const type = evTarget.id.split('-')[1];
+
+	if (type === 'value') {
+		const value = parseInt(evTarget.value) as number;
+		uiStepTo.stepTo(uiStepTo.valueAsNumber + value);
+	}
+
+	if (type === 'min' || type === 'max') {
+		const value = (
+			(type === 'min')
+				? uiMinMax.minAsNumber
+				: uiMinMax.maxAsNumber
+		) + parseInt(evTarget.value) as number;
+
+		uiMinMax.setAttribute(type, `${value}`);
 	}
 }
-
-// const test = document.getElementById('test');
-// console.log(test);
-
-// const test = document.querySelector('ui-number') as HTMLSelectorElement
-// test.setAttribute('looping', 'false')
-// test.value = '10';
-// console.log(test.value, test.content)

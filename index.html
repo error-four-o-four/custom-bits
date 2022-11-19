@@ -18,8 +18,51 @@
       </section>
 
       <section>
-        <h2>A Number Spinner Component</h2>
+        <h2>A Calendar Component</h2>
+        <article class="flex-1-2">
+          <pre>&lt;ui-calendar&gt;&lt;&sol;ui-calendar&gt;</pre>
+          <div>
+            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+              et dolore magna aliquyam</p>
+          </div>
+          <div>
+            <ui-calendar></ui-calendar>
+          </div>
+        </article>
+      </section>
 
+      <section>
+        <h2>A Number Spinner Component</h2>
+        <article class="flex-2-1">
+          <div>
+            <p>Animated '.stepTo(value)'</p>
+            <p>
+              <button id="decrease-value" value="-10" name="interactive-button" type="button">Decrease value by &lsquo;10&rsquo;</button>
+            </p>
+            <p>
+              <button id="increase-value" value="10" name="interactive-button" type="button">Increase value by &lsquo;10&rsquo;</button>
+            </p>
+          </div>
+          <div class="min-content">
+            <ui-number id="ui-interactive-step"></ui-number>
+          </div>
+        </article>
+        <article class="flex-2-1">
+          <div>
+            <p>Set attributes dynamically</p>
+            <p>
+              <button id="decrease-min" value="-1" name="interactive-button" type="button">Decrease &lsquo;min&rsquo;</button>
+              <button id="increase-min" value="1" name="interactive-button" type="button">Increase &lsquo;min&rsquo;</button>
+            </p>
+            <p>
+              <button id="decrease-max" value="-1" name="interactive-button" type="button">Decrease &lsquo;max&rsquo;</button>
+              <button id="increase-max" value="1" name="interactive-button" type="button">Increase &lsquo;max&rsquo;</button>
+            </p>
+          </div>
+          <div class="min-content">
+            <ui-number id="ui-interactive-minmax" min="1" max="5"></ui-number>
+          </div>
+        </article>
         <article class="flex-2-1">
           <pre>&lt;ui-number value="5"&gt;&lt;&sol;ui-number&gt;</pre>
           <div>
@@ -31,20 +74,17 @@
             <ui-number value="5"></ui-number>
           </div>
         </article>
-
-
-      <article class="flex-2-1">
-        <pre>&lt;ui-number pad="2" min="5" max="25"&gt;&lt;&sol;ui-number&gt;</pre>
-        <div>
-          <p>This element has constrained values.</p>
-          <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
-            et dolore magna aliquyam</p>
+        <article class="flex-2-1">
+          <pre>&lt;ui-number pad="2" min="5" max="25"&gt;&lt;&sol;ui-number&gt;</pre>
+          <div>
+            <p>This element has constrained values.</p>
+            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
+              et dolore magna aliquyam</p>
           </div>
           <div class="min-content">
             <ui-number pad="2" min="5" max="25"></ui-number>
           </div>
         </article>
-
         <article class="flex-2-1">
           <pre>&lt;ui-number min="-10" max="10" looping&gt;&lt;&sol;ui-number&gt;</pre>
           <div>
@@ -54,39 +94,6 @@
           </div>
           <div class="min-content">
             <ui-number min="0" max="15" looping></ui-number>
-          </div>
-        </article>
-
-<!--
-        <article class="flex-2-1">
-          <div>
-            <p>Set attributes dynamically</p>
-            <p>
-              <button id="decrease-min" type="button">Decrease &lsquo;min&rsquo;</button>
-              <button id="increase-min" type="button">Increase &lsquo;min&rsquo;</button>
-            </p>
-            <p>
-              <button id="decrease-max" type="button">Decrease &lsquo;max&rsquo;</button>
-              <button id="increase-max" type="button">Increase &lsquo;max&rsquo;</button>
-            </p>
-          </div>
-          <div class="min-content">
-            <ui-number id="ui-interactive" min="-1" max="1"></ui-number>
-          </div>
-        </article>
-         -->
-      </section>
-
-      <section>
-        <h2>A Calendar Component</h2>
-        <article class="flex-1-2">
-          <pre>&lt;ui-calendar&gt;&lt;&sol;ui-calendar&gt;</pre>
-          <div>
-            <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore
-              et dolore magna aliquyam</p>
-          </div>
-          <div>
-            <ui-calendar></ui-calendar>
           </div>
         </article>
       </section>

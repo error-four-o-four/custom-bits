@@ -1,7 +1,8 @@
-import { equalMonth, equalYear } from "../utils/date";
+import { equalMonth, equalYear, getNumDaysOfMonth } from "../utils/date";
 import { deactivateScrollWhileFocused, supportsTouch } from "../utils/environment";
-import { requestAnimation } from "./animation";
+
 import { HTMLCalendarElement } from "./component";
+import { requestAnimation } from "./animation";
 import { updateCurrentCell } from "./component";
 
 const validKeys = 'ArrowUp ArrowRight ArrowDown ArrowLeft'.split(' ');
@@ -59,13 +60,21 @@ function handleKeyEvent(this: HTMLCalendarElement, ev: KeyboardEvent) {
 		return;
 	}
 
-	/**@todo */
-	// const date = new Date(this.valueAsDate);
-	// if (ev.key === 'ArrowRight') {
-	// 	date.setDate(36);
-	// }
-	// if (ev.key === 'ArrowLeft') {
-	// 	date.setDate(-48);
-	// }
-	// requestAnimation(this, date);
+	const date = this.valueAsDate;
+
+	if (ev.key === 'ArrowRight') {
+		const month = date.getMonth() + 1;
+		date.setMonth(month, 1);
+		requestAnimation(this, date);
+		return;
+	}
+
+	if (ev.key === 'ArrowLeft') {
+		const month = date.getMonth() - 1;
+		const days = getNumDaysOfMonth(date.getFullYear(), month);
+		date.setMonth(month, days);
+		console.log(this.valueAsDate, date)
+		requestAnimation(this, date);
+		return;
+	}
 }
