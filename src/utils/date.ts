@@ -18,14 +18,19 @@ export const getNumWeeksOfYear = (d: Date) => {
       ? 53 : 52;
 };
 
-export const getFirstDateOfMonth = (d: { getFullYear: () => number; getMonth: () => number; }) => new Date(d.getFullYear(), d.getMonth(), 1);
+export const getFirstDateOfMonth = (d: Date) => new Date(d.getFullYear(), d.getMonth(), 1);
 
-export const getNumDaysOfMonth = (month: number, year: any) => ([1, 3, 5, 7, 8, 10, 12].includes(month))
-  ? 31
-  : (month !== 2)
-    ? 30
-    : (isLeapYear(year))
-      ? 29 : 28;
+export const getNumDaysOfMonth = (d: Date) => {
+  const y = d.getFullYear();
+  const m = d.getMonth();
+
+  return ([0, 2, 4, 6, 7, 9, 11].includes(m))
+   ? 31
+   : (m != 1)
+     ? 30
+     : (isLeapYear(y))
+       ? 29 : 28;
+}
 
 export const getWeek = (d: Date) => {
   const t = new Date(d);

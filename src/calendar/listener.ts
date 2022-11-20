@@ -3,78 +3,74 @@ import { deactivateScrollWhileFocused, supportsTouch } from "../utils/environmen
 
 import { HTMLCalendarElement } from "./component";
 import { requestAnimation } from "./animation";
-import { updateCurrentCell } from "./component";
+import { updateCurrentCell } from "./renderer";
 
 const validKeys = 'ArrowUp ArrowRight ArrowDown ArrowLeft'.split(' ');
 
 export function addListener(target: HTMLCalendarElement) {
-	target.table?.addEventListener('click', selectCell.bind(target));
+	const body = target.shadow.querySelector('.cal-body') as HTMLElement;
+	body.addEventListener('click', selectCell.bind(null, target));
 
 	if (!supportsTouch) {
-		target.addEventListener('keydown', handleKeyEvent.bind(target))
+		target.addEventListener('keydown', handleKeyEvent.bind(null, target))
 	}
 
 	deactivateScrollWhileFocused(target, validKeys);
 }
 
-function selectCell(this: HTMLCalendarElement, ev: Event) {
-	if ((ev.target as HTMLElement).nodeName !== 'TD') return;
+function selectCell(target: HTMLCalendarElement, ev: Event) {
+	if ((ev.target as HTMLElement).nodeName !== 'SPAN') return;
 
-	const date = new Date((ev.target as HTMLTableCellElement).title)
+	const date = new Date((ev.target as HTMLSpanElement).title);
 
-	if (equalMonth(date, this.valueAsDate) && equalYear(date, this.valueAsDate)) {
-		this.valueAsDate = date;
-		updateCurrentCell(this);
+	if (equalMonth(date, target.valueAsDate) && equalYear(date, target.valueAsDate)) {
+		target.valueAsDate = date;
+		updateCurrentCell(target);
 		return;
 	}
 
-	requestAnimation(this, date);
+	requestAnimation(target, date);
 }
 
-function handleKeyEvent(this: HTMLCalendarElement, ev: KeyboardEvent) {
-	if (!validKeys.includes(ev.key) || this.cell === null) return
+const numCols = 8;
+const numRows = 6;
 
-	const cellIndex = this.cell.cellIndex;
-	const row = this.cell.parentElement as HTMLTableRowElement;
+function handleKeyEvent(target: HTMLCalendarElement, ev: KeyboardEvent) {
+	if (!validKeys.includes(ev.key) || target.cell === null) return
 
-	if (row === null) return;
+	const index = target.cells.indexOf(target.cell);
+	const col = index % numCols;
+	const row = Math.floor(index / numCols);
 
-	const rowIndex = row.rowIndex;
-
-	if (ev.key === 'ArrowUp' && rowIndex > 1) {
-		const prev = row.previousElementSibling as HTMLTableRowElement;
-		prev.cells[cellIndex].click();
+	if (ev.key === 'ArrowUp' && row > 0) {
+		target.cells[index - numCols].click();
 		return;
 	}
-	if (ev.key === 'ArrowDown' && rowIndex < 6) {
-		const next = row.nextElementSibling as HTMLTableRowElement;
-		next.cells[cellIndex].click();
+	if (ev.key === 'ArrowDown' && row < numRows - 1) {
+		target.cells[index + numCols].click();
 		return;
 	}
-	if (ev.key === 'ArrowRight' && cellIndex < 7) {
-		row.cells[cellIndex + 1].click();
+	if (ev.key === 'ArrowRight' && col < numCols - 1) {
+		target.cells[index + 1].click();
 		return;
 	}
-	if (ev.key === 'ArrowLeft' && cellIndex > 1) {
-		row.cells[cellIndex - 1].click();
+	if (ev.key === 'ArrowLeft' && col > 1) {
+		target.cells[index - 1].click();
 		return;
 	}
 
-	const date = this.valueAsDate;
+	const date = target.valueAsDate;
 
 	if (ev.key === 'ArrowRight') {
-		const month = date.getMonth() + 1;
-		date.setMonth(month, 1);
-		requestAnimation(this, date);
+		date.setMonth(date.getMonth() + 1, 1);
+		requestAnimation(target, date);
 		return;
 	}
 
 	if (ev.key === 'ArrowLeft') {
-		const month = date.getMonth() - 1;
-		const days = getNumDaysOfMonth(date.getFullYear(), month);
-		date.setMonth(month, days);
-		console.log(this.valueAsDate, date)
-		requestAnimation(this, date);
+		date.setMonth(date.getMonth() - 1);
+		date.setDate(getNumDaysOfMonth(date));
+		requestAnimation(target, date);
 		return;
 	}
 }

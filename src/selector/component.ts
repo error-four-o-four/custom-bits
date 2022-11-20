@@ -68,7 +68,8 @@ export class HTMLSelectorElement extends HTMLInputElement {
 		this.content.id = 'content';
 
 		this.item = null;
-		// this.onsnapend = null;
+
+		// console.log(this._internals);
 	}
 
 	public connectedCallback(): void {
