@@ -1,0 +1,20 @@
+{
+  "name": "@custom-bits/select-number",
+  "version": "0.0.0",
+  "description": "Custom Element Component",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/error-four-o-four/native-web-component-selector.git"
+  },
+  "author": "Ich",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/error-four-o-four/native-web-component-selector/issues"
+  },
+  "homepage": "https://github.com/error-four-o-four/native-web-component-selector#readme"
+}

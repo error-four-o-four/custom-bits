@@ -1,0 +1,18 @@
+{
+  "name": "@custom-bits/boilerplate-native",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "dist/*"
+  ],
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "rimraf dist && tsc && vite build && npx npm-dts generate -o dist/index.d.ts -L warn"
+  }
+}
