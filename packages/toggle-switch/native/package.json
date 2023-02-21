@@ -9,12 +9,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/error-four-o-four/native-web-component-selector.git"
+    "url": "git+https://github.com/error-four-o-four/custom-bits/tree/main/packages/toggle-switch/native.git"
   },
   "author": "Ich",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/error-four-o-four/native-web-component-selector/issues"
-  },
-  "homepage": "https://github.com/error-four-o-four/native-web-component-selector#readme"
+  "license": "MIT"
 }

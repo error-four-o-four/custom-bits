@@ -1,7 +1,11 @@
 {
-  "name": "@custom-bits/boilerplate-native",
+  "name": "@custom-bits/boilerplate",
   "private": true,
   "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/error-four-o-four/custom-bits/tree/main/packages/boilerplate/native.git"
+  },
   "type": "module",
   "files": [
     "dist/*"
