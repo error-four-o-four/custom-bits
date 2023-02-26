@@ -2,7 +2,9 @@
   "name": "@http404/custom-bits",
   "private": true,
   "workspaces": [
-    "packages/**/*"
+    "packages/boilerplate",
+    "packages/package-a",
+    "packages/package-b"
   ],
   "repository": {
     "type": "git",
@@ -18,8 +20,9 @@
     "format:check": "prettier --check .",
     "lint": "eslint --fix .",
     "format": "prettier --write .",
-    "start": "vite ./demos/native",
-    "build": "npm run -w ./packages/**/* build"
+    "dev:playground": "vite playground/native",
+    "dev": "node scripts/dev.js",
+    "build": "npm run --workspaces build"
   },
   "devDependencies": {
     "@types/node": "^18.13.0",
@@ -37,11 +40,13 @@
     "eslint-plugin-prettier": "^4.2.1",
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.32.2",
+    "kleur": "^4.1.5",
     "npm-dts": "^1.3.12",
     "prettier": "^2.8.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "rimraf": "^4.1.2",
+    "terser": "^5.16.5",
     "typescript": "^4.9.5",
     "vite": "^4.1.2"
   }

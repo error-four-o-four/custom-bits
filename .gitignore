@@ -11,7 +11,6 @@ node_modules
 dist
 dist-ssr
 *.local
-setup
 
 # Editor directories and files
 .vscode/*
@@ -26,3 +25,7 @@ setup
 
 
 desktop.ini
+
+setup
+legacy
+
