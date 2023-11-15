@@ -2,13 +2,11 @@
 	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
 		"composite": true,
-		"declarationDir": "dist/types",
+		// "declarationDir": "dist/types",
 		"rootDir": "./src",
 		"outDir": "./dist",
-		"paths": {
-			"@custom-bits/core": ["../core/src/index.ts"]
-		}
+		"types": ["vite/client"]
 	},
 	"include": ["src/**/*.ts"],
-	"references": [{ "path": "../core" }]
+	"exclude": ["node_modules", "dist"]
 }

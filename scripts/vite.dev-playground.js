@@ -12,12 +12,10 @@ const main = {
   main: resolve(basePath, 'index.html'),
 };
 
-const input = packages.reduce((all, pkg) => {
-  return {
+const input = packages.reduce((all, pkg) => ({
     ...all,
     [pkg]: resolve(viewsPath, pkg, 'index.html'),
-  };
-}, main);
+  }), main);
 
 export default defineConfig({
   root: basePath,

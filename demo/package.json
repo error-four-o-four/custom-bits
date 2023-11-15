@@ -1,0 +1,18 @@
+{
+	"name": "@custom-bits/demo",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "vite"
+	},
+	"license": "ISC",
+	"dependencies": {
+		"@custom-bits/boilerplate": "file://../../packages/boilerplate"
+	},
+	"devDependencies": {
+		"typescript": "^5.2.2",
+		"vite": "^4.5.0",
+		"vite-plugin-eslint": "^1.8.1"
+	}
+}
+

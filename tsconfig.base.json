@@ -1,0 +1,22 @@
+{
+	"compilerOptions": {
+		"target": "ESNext",
+		"useDefineForClassFields": true,
+		"module": "ESNext",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"moduleResolution": "bundler",
+		"skipLibCheck": true,
+		"strict": true,
+		"resolveJsonModule": true,
+		"esModuleInterop": true,
+		"isolatedModules": true,
+		"declaration": true,
+		"sourceMap": true,
+		"noEmit": false,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"types": ["vite/client", "node"]
+	},
+	"exclude": ["node_modules", "dist", "**/dist/*"],
+	"references": [{ "path": "demo" }, { "path": "packages/*" }]
+}
